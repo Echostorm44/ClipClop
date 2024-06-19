@@ -6,52 +6,64 @@
         xmlns:local="clr-namespace:ClipClop"        
         mc:Ignorable="d" Closing="Window_Closing"
         SourceInitialized="Window_SourceInitialized"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" MinHeight="450" Width="700" MinWidth="700">
     <Window.Resources>
         <local:PinIconConverter x:Key="PinIconConverter" />
         <local:FalseBoolToVisConverter x:Key="FalseBoolToVisConverter"/>
         <local:BoolToVisConverter x:Key="BoolToVisConverter"/>
         <local:PercentageConverter x:Key="PercentageConverter"/>
     </Window.Resources>
-    <Grid>
-        <ListView x:Name="lvMain" Background="#252627" HorizontalContentAlignment="Stretch">
+    <Grid Margin="3">
+        <ListView x:Name="lvMain" Background="#292a2a" HorizontalContentAlignment="Stretch">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                            <ColumnDefinition Width="4"></ColumnDefinition>
-                            <ColumnDefinition Width="27"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="{Binding Path=Text}" TextWrapping="Wrap"
-                            HorizontalAlignment="Left" VerticalAlignment="Center"
-                            Height="30" Foreground="#FFFFFFFF"
-                            FontSize="21" 
-                            MaxWidth="{Binding Path=ActualWidth, ElementName=lvMain, UpdateSourceTrigger=PropertyChanged, Converter={local:PercentageConverter}, ConverterParameter='0.91'}"                            
-                            Visibility= "{Binding IsImage, Converter={StaticResource FalseBoolToVisConverter}}">
-                        </TextBlock>
-                        <Image Source="{Binding Path=Image}"
-                               Visibility= "{Binding IsImage, Converter={StaticResource BoolToVisConverter}}">
-                        </Image>
-                        <StackPanel Orientation="Vertical" Grid.Column="2">
-                            <Button Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.TogglePinCommand}"
-                                CommandParameter="{Binding}" BorderThickness="0" Background="#252627">
-                                <TextBlock Text="&#xf005;"                                 
-                                    FontFamily="{Binding Path=Pinned, Converter={StaticResource PinIconConverter}}" 
-                                    Foreground="GhostWhite" FontSize="20" 
-                                    Background="#252627"
-                                    VerticalAlignment="Center"></TextBlock>
-                            </Button>
-                            <Button Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.DeleteClipCommand}"
-                                CommandParameter="{Binding}" BorderThickness="0" Background="#252627">
-                                <TextBlock Text="&#xf2ed;"                                 
-                                    FontFamily="{StaticResource FontAwesomeReg}"
-                                    Foreground="GhostWhite" FontSize="20" 
-                                    Background="#252627" 
-                                    VerticalAlignment="Center"></TextBlock>
-                            </Button>
-                        </StackPanel>
-                    </Grid>                    
+                    <Border CornerRadius="8" Padding="2" BorderThickness="2"
+                            Margin="0" BorderBrush="#373737" Background="#373737" >
+                        <Grid Background="#373737" Margin="7,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"></ColumnDefinition>
+                                <ColumnDefinition Width="4"></ColumnDefinition>
+                                <ColumnDefinition Width="27"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Path=Text}" TextWrapping="Wrap"
+                                HorizontalAlignment="Left" VerticalAlignment="Center"
+                                Height="30" Foreground="#FFFFFFFF"
+                                FontSize="21" 
+                                MaxWidth="{Binding Path=ActualWidth, ElementName=lvMain, UpdateSourceTrigger=PropertyChanged, Converter={local:PercentageConverter}, ConverterParameter='0.85'}"                            
+                                Visibility= "{Binding IsImage, Converter={StaticResource FalseBoolToVisConverter}}">
+                            </TextBlock>
+                            <Image Source="{Binding Path=Image}" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                   Height="80"
+                                   Visibility= "{Binding IsImage, Converter={StaticResource BoolToVisConverter}}">
+                            </Image>
+                            <Grid Grid.Column="2" VerticalAlignment="Center">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"></RowDefinition>
+                                    <RowDefinition Height="10"></RowDefinition>
+                                    <RowDefinition Height="*"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Button Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.TogglePinCommand}"
+                                    CommandParameter="{Binding}" BorderThickness="0" Background="#373737"
+                                        VerticalAlignment="Top">
+                                    <TextBlock Text="&#xf005;"                                 
+                                        FontFamily="{Binding Path=Pinned, Converter={StaticResource PinIconConverter}}" 
+                                        Foreground="GhostWhite" FontSize="20" 
+                                        Background="#373737"
+                                        VerticalAlignment="Top"></TextBlock>
+                                </Button>
+                                <Button Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.DeleteClipCommand}"
+                                    CommandParameter="{Binding}" BorderThickness="0" Background="#373737"
+                                        Grid.Row="2"
+                                        VerticalAlignment="Bottom">
+                                    <TextBlock Text="&#xf2ed;"                                 
+                                        FontFamily="{StaticResource FontAwesomeReg}"
+                                        Foreground="GhostWhite" FontSize="20" 
+                                        Background="#373737" 
+                                        VerticalAlignment="Center"></TextBlock>
+                                </Button>
+                            </Grid>
+                        </Grid>                    
+                    </Border>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
