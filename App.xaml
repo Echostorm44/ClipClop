@@ -1,0 +1,11 @@
+﻿<Application x:Class="ClipClop.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:ClipClop"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <FontFamily x:Key="FontAwesomeSolid">/ClipClop;component/Fonts/FontAwesomeSolid.otf#Font Awesome 6 Free Solid</FontFamily>
+        <FontFamily x:Key="FontAwesomeReg">/ClipClop;component/Fonts/FontAwesomeReg.otf#Font Awesome 6 Free Regular</FontFamily>
+        
+    </Application.Resources>
+</Application>
