@@ -93,7 +93,9 @@ public partial class MainWindow : Window
 
     private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
     {
+        WindowPlacement.SavePlacement(this);
         MyWatcher.Dispose();
+        ShowHotKey.Unregister();
     }
 
     private void Window_SourceInitialized(object sender, EventArgs e)
@@ -143,6 +145,7 @@ public partial class MainWindow : Window
             }
         };
         MyWatcher = new ClipboardWatcher(this, pro);
+        WindowPlacement.ApplyPlacement(this);
     }
 
     private void TogglePin(ClipItem item)
