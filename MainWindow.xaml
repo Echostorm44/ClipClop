@@ -6,15 +6,26 @@
         xmlns:local="clr-namespace:ClipClop"        
         mc:Ignorable="d" Closing="Window_Closing"
         SourceInitialized="Window_SourceInitialized"
-        Title="MainWindow" Height="450" MinHeight="450" Width="700" MinWidth="700">
+        Title="ClipClop" MinHeight="450" MinWidth="700">
     <Window.Resources>
         <local:PinIconConverter x:Key="PinIconConverter" />
         <local:FalseBoolToVisConverter x:Key="FalseBoolToVisConverter"/>
         <local:BoolToVisConverter x:Key="BoolToVisConverter"/>
-        <local:PercentageConverter x:Key="PercentageConverter"/>
+        <local:PercentageConverter x:Key="PercentageConverter"/>        
     </Window.Resources>
-    <Grid Margin="3">
-        <ListView x:Name="lvMain" Background="#292a2a" HorizontalContentAlignment="Stretch">
+    <Grid Margin="3" Background="#292a2a">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="29"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Button BorderThickness="0" Background="#292a2a" Click="CloseButton_Click"
+            VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10,2">
+            <TextBlock Text="&#xf410;" FontFamily="{StaticResource FontAwesomeReg}" 
+                Foreground="GhostWhite" FontSize="23" Background="#292a2a"
+                VerticalAlignment="Top"></TextBlock>
+        </Button>
+        <ListView x:Name="lvMain" Background="#292a2a" HorizontalContentAlignment="Stretch" 
+                  Grid.Row="1" BorderThickness="0">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Border CornerRadius="8" Padding="2" BorderThickness="2"
@@ -25,17 +36,25 @@
                                 <ColumnDefinition Width="4"></ColumnDefinition>
                                 <ColumnDefinition Width="27"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="{Binding Path=Text}" TextWrapping="Wrap"
-                                HorizontalAlignment="Left" VerticalAlignment="Center"
-                                Height="30" Foreground="#FFFFFFFF"
-                                FontSize="21" 
-                                MaxWidth="{Binding Path=ActualWidth, ElementName=lvMain, UpdateSourceTrigger=PropertyChanged, Converter={local:PercentageConverter}, ConverterParameter='0.85'}"                            
-                                Visibility= "{Binding IsImage, Converter={StaticResource FalseBoolToVisConverter}}">
-                            </TextBlock>
+                            <Grid>
+                                <Grid.InputBindings>
+                                    <MouseBinding MouseAction="LeftDoubleClick"
+                                                  Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.PasteClipCommand}"
+                                                  CommandParameter="{Binding}">                                        
+                                    </MouseBinding>
+                                </Grid.InputBindings>
+                                <TextBlock Text="{Binding Path=Text}" TextWrapping="Wrap"
+                                    HorizontalAlignment="Left" VerticalAlignment="Center"
+                                    Height="30" Foreground="#FFFFFFFF"
+                                    FontSize="21" 
+                                    MaxWidth="{Binding Path=ActualWidth, ElementName=lvMain, UpdateSourceTrigger=PropertyChanged, Converter={local:PercentageConverter}, ConverterParameter='0.85'}"                            
+                                    Visibility= "{Binding IsImage, Converter={StaticResource FalseBoolToVisConverter}}">
+                                </TextBlock>
                             <Image Source="{Binding Path=Image}" HorizontalAlignment="Left" VerticalAlignment="Center"
-                                   Height="80"
-                                   Visibility= "{Binding IsImage, Converter={StaticResource BoolToVisConverter}}">
+                                       Height="80"
+                                       Visibility= "{Binding IsImage, Converter={StaticResource BoolToVisConverter}}">
                             </Image>
+                            </Grid>
                             <Grid Grid.Column="2" VerticalAlignment="Center">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*"></RowDefinition>
