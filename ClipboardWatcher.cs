@@ -26,7 +26,7 @@ public class ClipboardWatcher : Control, IDisposable
     public const int WM_CLIPBOARDUPDATE = 0x031D;
     static readonly string[] formats = Enum.GetNames(typeof(ClipboardFormat));
     IProgress<RawClipboardItem> ProgressReporter;
-    IntPtr windowHandle = IntPtr.Zero;
+    public IntPtr MyWindowHandle = IntPtr.Zero;
     private static readonly IntPtr WndProcSuccess = IntPtr.Zero;
     HwndSource source;
 
@@ -42,8 +42,8 @@ public class ClipboardWatcher : Control, IDisposable
         }
 
         source.AddHook(WndProc);
-        windowHandle = new WindowInteropHelper(windowSource).Handle;
-        AddClipboardFormatListener(windowHandle);
+        MyWindowHandle = new WindowInteropHelper(windowSource).Handle;
+        AddClipboardFormatListener(MyWindowHandle);
     }
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -98,7 +98,7 @@ public class ClipboardWatcher : Control, IDisposable
 
     public void Dispose()
     {
-        RemoveClipboardFormatListener(windowHandle);
+        RemoveClipboardFormatListener(MyWindowHandle);
         source.RemoveHook(WndProc);
     }
 }

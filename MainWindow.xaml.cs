@@ -30,18 +30,48 @@ public partial class MainWindow : Window
     [DllImport("msvcrt.dll")]
     private static extern int memcmp(IntPtr b1, IntPtr b2, long count);
 
-    ClipboardWatcher watcher;
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetWindow(IntPtr hWnd, uint wCmd);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommands nCmdShow);
+
+    private enum ShowWindowCommands : int
+    {
+        /// <summary>
+        /// Activates and displays the window. If the window is minimized or  maximized, the system restores it to its
+        /// original size and position.  An application should specify this flag when restoring a minimized window.
+        /// </summary>
+        Restore = 9,
+    }
+
+    [DllImport("user32.dll")]
+    private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+
+    private const byte VK_MENU = 0x12;
+    private const byte VK_TAB = 0x09;
+    private const byte VK_CONTROL = 0x11;
+    private const byte VK_V = 0x56;
+    private const uint KEYEVENTF_KEYUP = 0x0002;
+
+    ClipboardWatcher MyWatcher;
     Progress<RawClipboardItem> pro;
     public ObservableCollection<ClipItem> ClipItems { get; set; }
     private ListCollectionView MyCollectionView;
 
     public ICommand TogglePinCommand { get; set; }
     public ICommand DeleteClipCommand { get; set; }
+    public ICommand PasteClipCommand { get; set; }
+    HotKey ShowHotKey;
 
     public MainWindow()
     {
         this.TogglePinCommand = new RelayCommand((a) => TogglePin((ClipItem)a));
         this.DeleteClipCommand = new RelayCommand((a) => DeleteClip((ClipItem)a));
+        this.PasteClipCommand = new RelayCommand((a) => PasteClip((ClipItem)a));
         ClipItems = new ObservableCollection<ClipItem>();
         MyCollectionView = CollectionViewSource.GetDefaultView(ClipItems) as ListCollectionView;
         MyCollectionView.IsLiveSorting = true;
@@ -49,13 +79,21 @@ public partial class MainWindow : Window
         MyCollectionView.SortDescriptions.Add(new SortDescription("DateTimeAdded", ListSortDirection.Descending));
 
         InitializeComponent();
+        ShowHotKey = new HotKey(Key.W, KeyModifier.Ctrl, RestoreMe);
         this.DataContext = this;
         lvMain.ItemsSource = MyCollectionView;
     }
 
+    void RestoreMe(HotKey hotKey)
+    {
+        this.Show();
+        this.WindowState = WindowState.Normal;
+        //var loo = ShowWindow(MyWatcher.MyWindowHandle, ShowWindowCommands.Restore);        
+    }
+
     private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
     {
-        watcher.Dispose();
+        MyWatcher.Dispose();
     }
 
     private void Window_SourceInitialized(object sender, EventArgs e)
@@ -104,7 +142,7 @@ public partial class MainWindow : Window
                 }
             }
         };
-        watcher = new ClipboardWatcher(this, pro);
+        MyWatcher = new ClipboardWatcher(this, pro);
     }
 
     private void TogglePin(ClipItem item)
@@ -118,6 +156,54 @@ public partial class MainWindow : Window
     void DeleteClip(ClipItem item)
     {
         ClipItems.Remove(item);
+    }
+
+    void PasteClip(ClipItem item)
+    {
+        if(item == null)
+        {
+            return;
+        }
+        if(item.IsImage)
+        {
+            Clipboard.SetImage(item.Image);
+        }
+        else
+        {
+            Clipboard.SetText(item.Text);
+        }
+        SendAltTabAndPaste();
+        this.WindowState = WindowState.Minimized;
+    }
+
+    public static void SendAltTabAndPaste()
+    {
+        // Press Alt key
+        keybd_event(VK_MENU, 0, 0, UIntPtr.Zero);
+
+        // Press Tab key
+        keybd_event(VK_TAB, 0, 0, UIntPtr.Zero);
+
+        // Release Tab key
+        keybd_event(VK_TAB, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+
+        // Release Alt key
+        keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+
+        // Wait for a short delay to allow the window to switch
+        System.Threading.Thread.Sleep(500);
+
+        // Press Ctrl key
+        keybd_event(VK_CONTROL, 0, 0, UIntPtr.Zero);
+
+        // Press V key
+        keybd_event(VK_V, 0, 0, UIntPtr.Zero);
+
+        // Release V key
+        keybd_event(VK_V, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+
+        // Release Ctrl key
+        keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
     }
 
     public static void SaveBitmapSourceToFile(string filePath, BitmapSource image)
@@ -178,6 +264,11 @@ public partial class MainWindow : Window
             b1.UnlockBits(bd1);
             b2.UnlockBits(bd2);
         }
+    }
+
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        this.Close();
     }
 }
 
