@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -7,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -20,12 +23,12 @@ public static class Helpers
     {
         lock(lockLog)
         {
-            if(!Directory.Exists(App.AppLogFolderPath))
+            if(!Directory.Exists(App.LogFolderPath))
             {
-                Directory.CreateDirectory(App.AppLogFolderPath);
+                Directory.CreateDirectory(App.LogFolderPath);
             }
             var fileName = $"log-{DateTime.Now:yyyy-MM-dd}.txt";
-            using(TextWriter tw = new StreamWriter(Path.Combine(App.AppLogFolderPath, fileName), true))
+            using(TextWriter tw = new StreamWriter(System.IO.Path.Combine(App.LogFolderPath, fileName), true))
             {
                 tw.Write(entry);
             }
@@ -34,7 +37,7 @@ public static class Helpers
 
     public static string GetFileContents(string fileName)
     {
-        var filePath = Path.Combine(App.AppFolderPath, fileName);
+        var filePath = System.IO.Path.Combine(App.RootFolderPath, fileName);
         if(!File.Exists(filePath))
         {
             return "";
@@ -48,12 +51,48 @@ public static class Helpers
 
     public static void WriteFile(string filename, string contents)
     {
-        if(!Directory.Exists(App.AppFolderPath))
+        if(!Directory.Exists(App.RootFolderPath))
         {
-            Directory.CreateDirectory(App.AppFolderPath);
+            Directory.CreateDirectory(App.RootFolderPath);
         }
-        var filePath = Path.Combine(App.AppFolderPath, filename);
+        var filePath = System.IO.Path.Combine(App.RootFolderPath, filename);
         File.WriteAllText(filePath, contents);
+    }
+
+    public static void SaveBitmapSourceToFile(string filePath, BitmapSource image)
+    {
+        using(var fileStream = new FileStream(filePath, FileMode.Create))
+        {
+            BitmapEncoder encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(image as BitmapSource));
+            encoder.Save(fileStream);
+        }
+    }
+
+    public static BitmapSource LoadBitmapSourceFromFile(string filePath)
+    {// We load it this way so we don't retain a lock on the file in case we need to delete it later
+        var bytes = File.ReadAllBytes(filePath);
+        using var ms = new MemoryStream(bytes);
+        var bitmap = new BitmapImage();
+        bitmap.BeginInit();
+        bitmap.StreamSource = ms;
+        bitmap.CacheOption = BitmapCacheOption.OnLoad;
+        bitmap.EndInit();
+        bitmap.Freeze();
+        return (BitmapSource)bitmap;
+    }
+
+    public static Bitmap BitmapFromSource(BitmapSource bitmapsource)
+    {
+        Bitmap bitmap;
+        using(var outStream = new MemoryStream())
+        {
+            BitmapEncoder enc = new BmpBitmapEncoder();
+            enc.Frames.Add(BitmapFrame.Create(bitmapsource));
+            enc.Save(outStream);
+            bitmap = new Bitmap(outStream);
+        }
+        return bitmap;
     }
 }
 

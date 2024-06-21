@@ -10,6 +10,8 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -27,6 +29,10 @@ namespace ClipClop;
 
 public partial class MainWindow : Window
 {
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    static extern bool SetForegroundWindow(IntPtr hWnd);
+
     [DllImport("msvcrt.dll")]
     private static extern int memcmp(IntPtr b1, IntPtr b2, long count);
 
@@ -65,13 +71,17 @@ public partial class MainWindow : Window
     public ICommand TogglePinCommand { get; set; }
     public ICommand DeleteClipCommand { get; set; }
     public ICommand PasteClipCommand { get; set; }
-    HotKey ShowHotKey;
+    public ICommand ListViewEnterCommand { get; set; }
+    public ICommand EscapeCommand { get; set; }
+    public HotKey ShowHotKey;
 
     public MainWindow()
     {
         this.TogglePinCommand = new RelayCommand((a) => TogglePin((ClipItem)a));
         this.DeleteClipCommand = new RelayCommand((a) => DeleteClip((ClipItem)a));
         this.PasteClipCommand = new RelayCommand((a) => PasteClip((ClipItem)a));
+        this.ListViewEnterCommand = new RelayCommand((a) => ListViewHitEnter());
+        this.EscapeCommand = new RelayCommand((a) => EscapeButtonClick());
         ClipItems = new ObservableCollection<ClipItem>();
         MyCollectionView = CollectionViewSource.GetDefaultView(ClipItems) as ListCollectionView;
         MyCollectionView.IsLiveSorting = true;
@@ -84,11 +94,30 @@ public partial class MainWindow : Window
         lvMain.ItemsSource = MyCollectionView;
     }
 
-    void RestoreMe(HotKey hotKey)
+    public void SetNewHotkey(Key key, KeyModifier mod)
+    {
+        ShowHotKey.Unregister();
+        ShowHotKey.Dispose();
+        ShowHotKey = new HotKey(key, mod, RestoreMe);
+    }
+
+    void ListViewHitEnter()
+    {
+        if(lvMain.SelectedItem == null)
+        {
+            return;
+        }
+        var foo = (ClipItem)lvMain.SelectedItem;
+        PasteClip(foo);
+    }
+
+    public void RestoreMe(HotKey hotKey)
     {
         this.Show();
         this.WindowState = WindowState.Normal;
-        //var loo = ShowWindow(MyWatcher.MyWindowHandle, ShowWindowCommands.Restore);        
+        var loo = ShowWindow(MyWatcher.MyWindowHandle, ShowWindowCommands.Restore);
+        SetForegroundWindow(MyWatcher.MyWindowHandle);
+        lvMain.Focus();
     }
 
     private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -107,7 +136,7 @@ public partial class MainWindow : Window
             {
                 var img = (BitmapSource)e.Data;
                 var existing = ClipItems.Where(b => b.IsImage).SingleOrDefault(a => 
-                    CompareMemCmp(BitmapFromSource(img), BitmapFromSource(a.Image)));
+                    CompareMemCmp(Helpers.BitmapFromSource(img), Helpers.BitmapFromSource(a.Image)));
                 if(existing == null)
                 {
                     ClipItems.Add(new ClipItem()
@@ -146,6 +175,20 @@ public partial class MainWindow : Window
         };
         MyWatcher = new ClipboardWatcher(this, pro);
         WindowPlacement.ApplyPlacement(this);
+        var savedPins = Helpers.GetFileContents(App.SavedPinsPath);
+        if(!string.IsNullOrEmpty(savedPins))
+        {
+            var pins = JsonSerializer.Deserialize<List<ClipItem>>(savedPins);
+            foreach(var pin in pins)
+            {
+                if(pin.IsImage)
+                {
+                    pin.Image = Helpers.LoadBitmapSourceFromFile(pin.ImageFilePath);
+                }
+                ClipItems.Add(pin);
+            }
+        }
+        lvMain.Focus();
     }
 
     private void TogglePin(ClipItem item)
@@ -153,6 +196,26 @@ public partial class MainWindow : Window
         if(item != null)
         {
             item.Pinned = !item.Pinned;
+            // Save pinned images, delete unpinned images, overwrite saved pins file            
+            var unsavedImages = ClipItems.Where(a => a.IsImage && string.IsNullOrEmpty(a.ImageFilePath)).ToList();
+            foreach(var unsaved in unsavedImages)
+            {
+                var fileName = unsaved.DateTimeAdded.ToString("yyyy-MM-dd-HH-mm-ss") + ".png";
+                var filePath = System.IO.Path.Combine(App.ImageFolderPath, fileName);
+                Helpers.SaveBitmapSourceToFile(filePath, unsaved.Image);
+                unsaved.ImageFilePath = filePath;
+            }
+            var pins = ClipItems.Where(a => a.Pinned).ToList();
+
+            var toDelete = ClipItems.Where(a => !a.Pinned && !string.IsNullOrEmpty(a.ImageFilePath)).ToList();
+            foreach(var dieImgDie in toDelete)
+            {
+                File.Delete(dieImgDie.ImageFilePath);
+                dieImgDie.ImageFilePath = "";
+            }
+
+            var serializedPins = JsonSerializer.Serialize(pins);
+            Helpers.WriteFile(App.SavedPinsPath, serializedPins);
         }
     }
 
@@ -209,34 +272,6 @@ public partial class MainWindow : Window
         keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
     }
 
-    public static void SaveBitmapSourceToFile(string filePath, BitmapSource image)
-    {
-        using(var fileStream = new FileStream(filePath, FileMode.Create))
-        {
-            BitmapEncoder encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(image as BitmapSource));
-            encoder.Save(fileStream);
-        }
-    }
-
-    public static BitmapSource LoadBitmapSourceFromFile(string filePath)
-    {
-        return (BitmapSource)new BitmapImage(new Uri(filePath));
-    }
-
-    public static Bitmap BitmapFromSource(BitmapSource bitmapsource)
-    {
-        Bitmap bitmap;
-        using(var outStream = new MemoryStream())
-        {
-            BitmapEncoder enc = new BmpBitmapEncoder();
-            enc.Frames.Add(BitmapFrame.Create(bitmapsource));
-            enc.Save(outStream);
-            bitmap = new Bitmap(outStream);
-        }
-        return bitmap;
-    }
-
     public static bool CompareMemCmp(Bitmap b1, Bitmap b2)
     {
         if(b1 == null != (b2 == null))
@@ -271,7 +306,25 @@ public partial class MainWindow : Window
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
+        this.WindowState = WindowState.Minimized;
+    }
+
+    void ExitButton(object sender, RoutedEventArgs e)
+    {
         this.Close();
+    }
+
+    void EscapeButtonClick()
+    {
+        this.WindowState = WindowState.Minimized;
+    }
+
+    private void Settings_Click(object sender, RoutedEventArgs e)
+    {
+        SettingsWindow settings = new SettingsWindow(this);
+        settings.ShowDialog();
+        //myTaskBarIcon.ShowBalloonTip("Settings", "Settings are not yet implemented", 
+        //    Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Warning);
     }
 }
 
@@ -279,6 +332,7 @@ public class ClipItem : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
     public string Text { get; set; }
+    [JsonIgnore]
     public BitmapSource Image { get; set; }
     public string ImageFilePath { get; set; }
     DateTime dateTimeAdded;

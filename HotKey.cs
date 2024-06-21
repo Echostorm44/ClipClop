@@ -65,6 +65,7 @@ public class HotKey : IDisposable
         if(HotKeyCallbackLookup.TryGetValue(Id, out hotKey))
         {
             UnregisterHotKey(IntPtr.Zero, Id);
+            HotKeyCallbackLookup.Remove(Id);
         }
     }
 

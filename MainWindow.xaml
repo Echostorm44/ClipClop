@@ -6,25 +6,49 @@
         xmlns:local="clr-namespace:ClipClop"        
         mc:Ignorable="d" Closing="Window_Closing"
         SourceInitialized="Window_SourceInitialized"
-        BorderThickness="0" WindowStyle="None"
+        BorderThickness="0" WindowStyle="None" ShowInTaskbar="False"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
         Title="ClipClop" MinHeight="450" MinWidth="700" Icon="/Images/ClipClopIcon.ico">
     <Window.Resources>
         <local:PinIconConverter x:Key="PinIconConverter" />
         <local:FalseBoolToVisConverter x:Key="FalseBoolToVisConverter"/>
         <local:BoolToVisConverter x:Key="BoolToVisConverter"/>
         <local:PercentageConverter x:Key="PercentageConverter"/>
+        
     </Window.Resources>
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="31" GlassFrameThickness="-1" ResizeBorderThickness="4"></WindowChrome>
     </WindowChrome.WindowChrome>
-
-    <Border BorderThickness="0" CornerRadius="8" BorderBrush="#292a2a">
+    <Window.InputBindings>
+        <KeyBinding Key="Esc" Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.EscapeCommand}">            
+        </KeyBinding>
+    </Window.InputBindings>
+    <Border BorderThickness="0" CornerRadius="8" BorderBrush="#292a2a">        
     <Grid Margin="0" Background="#292a2a">
         <Grid.RowDefinitions>
             <RowDefinition Height="31"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
-
+            <tb:TaskbarIcon x:Name="myTaskBarIcon" Visibility="Visible"
+                            IconSource="/Images/ClipClopIcon.ico">
+                <tb:TaskbarIcon.ContextMenu>
+                    <ContextMenu FontSize="22" Background="#292a2a"
+                                 Foreground="GhostWhite" BorderThickness="0">
+                        <MenuItem Header="Settings" BorderThickness="0" Click="Settings_Click" 
+                                  Background="#292a2a">
+                            <MenuItem.Icon>
+                                <Image Source="/Images/Settings.png" Width="16" Height="16"></Image>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Quit" Click="ExitButton" BorderThickness="0"
+                                  Background="#292a2a">
+                            <MenuItem.Icon>
+                                <Image Width="16" Height="16" Source="/Images/Close.png"></Image>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </tb:TaskbarIcon.ContextMenu>
+            </tb:TaskbarIcon>
 
         <Button BorderThickness="0" Background="#292a2a" Click="CloseButton_Click"
                     WindowChrome.IsHitTestVisibleInChrome="True"
@@ -34,9 +58,13 @@
                     VerticalAlignment="Top"></TextBlock>
         </Button>
 
-
-        <ListView x:Name="lvMain" Background="#292a2a" HorizontalContentAlignment="Stretch" 
+            <ListView x:Name="lvMain" Background="#292a2a" HorizontalContentAlignment="Stretch" 
                       Grid.Row="1" BorderThickness="0">
+                <ListView.InputBindings>
+                    <KeyBinding Key="Return"
+            Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.ListViewEnterCommand}">
+                    </KeyBinding>
+                </ListView.InputBindings>
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Border CornerRadius="8" Padding="2" BorderThickness="2"
@@ -52,7 +80,7 @@
                                     <MouseBinding MouseAction="LeftDoubleClick"
                                                       Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.PasteClipCommand}"
                                                       CommandParameter="{Binding}">
-                                    </MouseBinding>
+                                    </MouseBinding>                                    
                                 </Grid.InputBindings>
                                 <TextBlock Text="{Binding Path=Text}" TextWrapping="Wrap"
                                         HorizontalAlignment="Left" VerticalAlignment="Center"
