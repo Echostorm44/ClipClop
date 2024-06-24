@@ -66,34 +66,59 @@ public class ClipboardWatcher : Control, IDisposable
 
     private void ClipChanged()
     {
-        var iData = Clipboard.GetDataObject();
-        if(iData == null)
+        int maxRetries = 10;
+        while(maxRetries-- > 0)
         {
-            return;
-        }
-
-        ClipboardFormat? format = null;
-        object data = null;
-
-        foreach(var f in formats)
-        {
-            if(iData.GetDataPresent(f))
+            try
             {
-                format = (ClipboardFormat)Enum.Parse(typeof(ClipboardFormat), f);
-                data = iData.GetData(f);
-                if(format == ClipboardFormat.Text && string.IsNullOrEmpty(data?.ToString()))
+                var iData = Clipboard.GetDataObject(); // Forms version had better error handing but we're trying to get away from that dependancy so we'll do the lifting ourselves System.Windows.Forms.Clipboard.GetDataObject();
+                if(iData == null)
                 {
-                    continue;
+                    return;
                 }
-                break;
+
+                ClipboardFormat? format = null;
+                object data = null;
+
+                foreach(var f in formats)
+                {
+                    if(iData.GetDataPresent(f))
+                    {
+                        format = (ClipboardFormat)Enum.Parse(typeof(ClipboardFormat), f);
+                        data = iData.GetData(f);
+                        if(format == ClipboardFormat.Text && string.IsNullOrEmpty(data?.ToString()))
+                        {
+                            continue;
+                        }
+                        break;
+                    }
+                }
+
+                if(data == null || format == null)
+                {
+                    return;
+                }
+                ProgressReporter.Report(new RawClipboardItem() { Data = data, Format = format.Value });
+                return;
+            }
+            catch(Exception ex)
+            {
+                /*
+                   The the problem here is that using the WPF version of Clipboard sometimes gets blocked from grabbing
+                the information from the clipboard because another application is trying at the moment && the WPF
+                version doesn't handle the contention as well as it should.  So we will test to see if the error code
+                is the OpenClipboard Failed (0x800401D0 (CLIPBRD_E_CANT_OPEN))
+                & if it is we will just wait a sec for the other application to finish && try again.  I haven't seen
+                this need more than 1 try yet but I'm giving it 10 just in case.  More info here:
+                https://stackoverflow.com/questions/12769264/openclipboard-failed-when-copy-pasting-data-from-wpf-datagrid
+                
+                 */
+                if(((System.Runtime.InteropServices.COMException)ex).ErrorCode == -2147221040)
+                {
+                    Task.Delay(20).Wait();
+                }
             }
         }
-
-        if(data == null || format == null)
-        {
-            return;
-        }
-        ProgressReporter.Report(new RawClipboardItem() { Data = data, Format = format.Value });
     }
 
     public void Dispose()

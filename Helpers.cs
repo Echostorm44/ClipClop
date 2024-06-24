@@ -233,3 +233,4 @@ public struct WINDOWPLACEMENT
     public POINT maxPosition;
     public RECT normalPosition;
 }
+

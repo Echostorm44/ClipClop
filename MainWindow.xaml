@@ -14,117 +14,152 @@
         <local:FalseBoolToVisConverter x:Key="FalseBoolToVisConverter"/>
         <local:BoolToVisConverter x:Key="BoolToVisConverter"/>
         <local:PercentageConverter x:Key="PercentageConverter"/>
-        
+        <Style x:Key="CustomMenuItemStyle" TargetType="MenuItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border Name="Border" Background="#292a2a">
+                            <Grid x:Name="Grid" Background="#292a2a">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter Grid.Column="0" x:Name="Icon" ContentSource="Icon" 
+                                                  Margin="5,3,3,3"
+                                                  VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                <ContentPresenter Grid.Column="1" Margin="8,3,10,3" ContentSource="Header" 
+                                                  HorizontalAlignment="Left"
+                                                  VerticalAlignment="Center" RecognizesAccessKey="True" />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Grid" Property="Background" Value="#393B3B" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="31" GlassFrameThickness="-1" ResizeBorderThickness="4"></WindowChrome>
+        <WindowChrome CaptionHeight="44" GlassFrameThickness="-1" ResizeBorderThickness="4"></WindowChrome>
     </WindowChrome.WindowChrome>
     <Window.InputBindings>
-        <KeyBinding Key="Esc" Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.EscapeCommand}">            
+        <KeyBinding Key="Esc" Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.EscapeCommand}">
         </KeyBinding>
     </Window.InputBindings>
-    <Border BorderThickness="0" CornerRadius="8" BorderBrush="#292a2a">        
-    <Grid Margin="0" Background="#292a2a">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="31"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
+    <Border BorderThickness="0" CornerRadius="8" Background="#292a2a" BorderBrush="#292a2a">
+        <Grid Margin="0" Background="#292a2a">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="44"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
             <tb:TaskbarIcon x:Name="myTaskBarIcon" Visibility="Visible"
-                            IconSource="/Images/ClipClopIcon.ico">
+                IconSource="/Images/ClipClopIcon.ico">
                 <tb:TaskbarIcon.ContextMenu>
                     <ContextMenu FontSize="22" Background="#292a2a"
-                                 Foreground="GhostWhite" BorderThickness="0">
+                     Margin="0" Padding="0"
+                     Foreground="GhostWhite" BorderThickness="0">
                         <MenuItem Header="Settings" BorderThickness="0" Click="Settings_Click" 
-                                  Background="#292a2a">
+                                Style="{StaticResource CustomMenuItemStyle}"
+                                Background="#292a2a">
                             <MenuItem.Icon>
-                                <Image Source="/Images/Settings.png" Width="16" Height="16"></Image>
+                                <TextBlock Text="&#xf013;" FontFamily="{StaticResource FontAwesomeSolid}"
+                                    Foreground="GhostWhite" FontSize="22" 
+                                    Background="#373737" 
+                                    VerticalAlignment="Center"></TextBlock>
                             </MenuItem.Icon>
                         </MenuItem>
                         <MenuItem Header="Quit" Click="ExitButton" BorderThickness="0"
-                                  Background="#292a2a">
+                                  Style="{StaticResource CustomMenuItemStyle}"
+                                Background="#292a2a">
                             <MenuItem.Icon>
-                                <Image Width="16" Height="16" Source="/Images/Close.png"></Image>
+                                <TextBlock Text="&#xf011;" FontFamily="{StaticResource FontAwesomeSolid}"
+                                    Foreground="GhostWhite" FontSize="22" 
+                                    Background="#373737" 
+                                    VerticalAlignment="Center"></TextBlock>
                             </MenuItem.Icon>
                         </MenuItem>
                     </ContextMenu>
                 </tb:TaskbarIcon.ContextMenu>
             </tb:TaskbarIcon>
 
-        <Button BorderThickness="0" Background="#292a2a" Click="CloseButton_Click"
+            <Button BorderThickness="0" Background="#292a2a" Click="CloseButton_Click"
                     WindowChrome.IsHitTestVisibleInChrome="True"
                 VerticalAlignment="Top" HorizontalAlignment="Right" Margin="11,4">
-            <TextBlock Text="&#xf00d;" FontFamily="{StaticResource FontAwesomeSolid}" 
-                    Foreground="GhostWhite" FontSize="23" Background="#292a2a"
+                <TextBlock Text="&#xf00d;" FontFamily="{StaticResource FontAwesomeSolid}" 
+                    Foreground="GhostWhite" FontSize="34" Background="#292a2a"
                     VerticalAlignment="Top"></TextBlock>
-        </Button>
+            </Button>
 
             <ListView x:Name="lvMain" Background="#292a2a" HorizontalContentAlignment="Stretch" 
-                      Grid.Row="1" BorderThickness="0">
+                    Grid.Row="1" BorderThickness="0">
                 <ListView.InputBindings>
                     <KeyBinding Key="Return"
-            Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.ListViewEnterCommand}">
+        Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.ListViewEnterCommand}">
                     </KeyBinding>
                 </ListView.InputBindings>
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <Border CornerRadius="8" Padding="2" BorderThickness="2"
-                                Margin="0" BorderBrush="#373737" Background="#373737" >
-                        <Grid Background="#373737" Margin="7,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"></ColumnDefinition>
-                                <ColumnDefinition Width="4"></ColumnDefinition>
-                                <ColumnDefinition Width="27"></ColumnDefinition>
-                            </Grid.ColumnDefinitions>
-                            <Grid>
-                                <Grid.InputBindings>
-                                    <MouseBinding MouseAction="LeftDoubleClick"
-                                                      Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.PasteClipCommand}"
-                                                      CommandParameter="{Binding}">
-                                    </MouseBinding>                                    
-                                </Grid.InputBindings>
-                                <TextBlock Text="{Binding Path=Text}" TextWrapping="Wrap"
-                                        HorizontalAlignment="Left" VerticalAlignment="Center"
-                                        Height="30" Foreground="#FFFFFFFF"
-                                        FontSize="21" 
-                                        MaxWidth="{Binding Path=ActualWidth, ElementName=lvMain, UpdateSourceTrigger=PropertyChanged, Converter={local:PercentageConverter}, ConverterParameter='0.85'}"                            
-                                        Visibility= "{Binding IsImage, Converter={StaticResource FalseBoolToVisConverter}}">
-                                </TextBlock>
-                                <Image Source="{Binding Path=Image}" HorizontalAlignment="Left" VerticalAlignment="Center"
-                                           Height="80"
-                                           Visibility= "{Binding IsImage, Converter={StaticResource BoolToVisConverter}}">
-                                </Image>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Border CornerRadius="8" Padding="2" BorderThickness="2"
+                            Margin="0" BorderBrush="#373737" Background="#373737" >
+                            <Grid Background="#373737" Margin="7,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                    <ColumnDefinition Width="4"></ColumnDefinition>
+                                    <ColumnDefinition Width="27"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <Grid>
+                                    <Grid.InputBindings>
+                                        <MouseBinding MouseAction="LeftDoubleClick"
+                                                    Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.PasteClipCommand}"
+                                                    CommandParameter="{Binding}">
+                                        </MouseBinding>
+                                    </Grid.InputBindings>
+                                    <TextBlock Text="{Binding Path=Text}" TextWrapping="Wrap"
+                                    HorizontalAlignment="Left" VerticalAlignment="Center"
+                                    Height="30" Foreground="#FFFFFFFF"
+                                    FontSize="21" 
+                                    MaxWidth="{Binding Path=ActualWidth, ElementName=lvMain, UpdateSourceTrigger=PropertyChanged, Converter={local:PercentageConverter}, ConverterParameter='0.85'}"                            
+                                    Visibility= "{Binding IsImage, Converter={StaticResource FalseBoolToVisConverter}}">
+                                    </TextBlock>
+                                    <Image Source="{Binding Path=Image}" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                        Height="80"
+                                        Visibility= "{Binding IsImage, Converter={StaticResource BoolToVisConverter}}">
+                                    </Image>
+                                </Grid>
+                                <Grid Grid.Column="2" VerticalAlignment="Center">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"></RowDefinition>
+                                        <RowDefinition Height="10"></RowDefinition>
+                                        <RowDefinition Height="*"></RowDefinition>
+                                    </Grid.RowDefinitions>
+                                    <Button Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.TogglePinCommand}"
+                                    CommandParameter="{Binding}" BorderThickness="0" Background="#373737"
+                                        VerticalAlignment="Top">
+                                        <TextBlock Text="&#xf005;"                                 
+                                        FontFamily="{Binding Path=Pinned, Converter={StaticResource PinIconConverter}}" 
+                                        Foreground="GhostWhite" FontSize="20" 
+                                        Background="#373737"
+                                        VerticalAlignment="Top"></TextBlock>
+                                    </Button>
+                                    <Button Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.DeleteClipCommand}"
+                                    CommandParameter="{Binding}" BorderThickness="0" Background="#373737"
+                                        Grid.Row="2"
+                                        VerticalAlignment="Bottom">
+                                        <TextBlock Text="&#xf2ed;"                                 
+                                        FontFamily="{StaticResource FontAwesomeReg}"
+                                        Foreground="GhostWhite" FontSize="20" 
+                                        Background="#373737" 
+                                        VerticalAlignment="Center"></TextBlock>
+                                    </Button>
+                                </Grid>
                             </Grid>
-                            <Grid Grid.Column="2" VerticalAlignment="Center">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*"></RowDefinition>
-                                    <RowDefinition Height="10"></RowDefinition>
-                                    <RowDefinition Height="*"></RowDefinition>
-                                </Grid.RowDefinitions>
-                                <Button Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.TogglePinCommand}"
-                                        CommandParameter="{Binding}" BorderThickness="0" Background="#373737"
-                                            VerticalAlignment="Top">
-                                    <TextBlock Text="&#xf005;"                                 
-                                            FontFamily="{Binding Path=Pinned, Converter={StaticResource PinIconConverter}}" 
-                                            Foreground="GhostWhite" FontSize="20" 
-                                            Background="#373737"
-                                            VerticalAlignment="Top"></TextBlock>
-                                </Button>
-                                <Button Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.DeleteClipCommand}"
-                                        CommandParameter="{Binding}" BorderThickness="0" Background="#373737"
-                                            Grid.Row="2"
-                                            VerticalAlignment="Bottom">
-                                    <TextBlock Text="&#xf2ed;"                                 
-                                            FontFamily="{StaticResource FontAwesomeReg}"
-                                            Foreground="GhostWhite" FontSize="20" 
-                                            Background="#373737" 
-                                            VerticalAlignment="Center"></TextBlock>
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-    </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
     </Border>
 </Window>

@@ -9,7 +9,7 @@
     Width="400" Height="400" mc:Ignorable="d" ShowInTaskbar="False"
     Title="SettingsWindow">
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="31" GlassFrameThickness="-1" ResizeBorderThickness="4"></WindowChrome>
+        <WindowChrome CaptionHeight="44" GlassFrameThickness="-1" ResizeBorderThickness="4"></WindowChrome>
     </WindowChrome.WindowChrome>
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscapeCommand}" />
@@ -20,7 +20,7 @@
         CornerRadius="8">
         <Grid Margin="0" Background="#292a2a">
             <Grid.RowDefinitions>
-                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="44"></RowDefinition>
                 <RowDefinition Height="40"></RowDefinition>
                 <RowDefinition Height="30"></RowDefinition>
                 <RowDefinition Height="30"></RowDefinition>
@@ -38,7 +38,7 @@
                     WindowChrome.IsHitTestVisibleInChrome="True"
                     VerticalAlignment="Top" HorizontalAlignment="Right" Margin="11,4">
                 <TextBlock Text="&#xf00d;" FontFamily="{StaticResource FontAwesomeSolid}" 
-                        Foreground="GhostWhite" FontSize="23" Background="#292a2a"
+                        Foreground="GhostWhite" FontSize="34" Background="#292a2a"
                         VerticalAlignment="Top"></TextBlock>
             </Button>
 
