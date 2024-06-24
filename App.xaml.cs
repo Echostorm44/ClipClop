@@ -42,5 +42,75 @@ public partial class App : System.Windows.Application
     private void Application_Startup(object sender, StartupEventArgs e)
     {
     }
+
+    private void CloseWindow_Event(object sender, RoutedEventArgs e)
+    {
+        if(e.Source != null)
+        {
+            this.CloseWind(Window.GetWindow((FrameworkElement)e.Source));
+        }
+    }
+
+    private void AutoMinimize_Event(object sender, RoutedEventArgs e)
+    {
+        if(e.Source != null)
+        {
+            this.MaximizeRestore(Window.GetWindow((FrameworkElement)e.Source));
+        }
+    }
+
+    private void Minimize_Event(object sender, RoutedEventArgs e)
+    {
+        if(e.Source != null)
+        {
+            this.MinimizeWind(Window.GetWindow((FrameworkElement)e.Source));
+        }
+    }
+
+    public void CloseWind(Window window)
+    {
+        window?.Close();
+    }
+
+    public void MaximizeRestore(Window window)
+    {
+        if(window == null)
+        {
+            return;
+        }
+
+        switch(window.WindowState)
+        {
+            case WindowState.Normal:
+                window.WindowState = WindowState.Maximized;
+                break;
+            case WindowState.Minimized:
+            case WindowState.Maximized:
+                window.WindowState = WindowState.Normal;
+                break;
+        }
+    }
+
+    public void MinimizeWind(Window window)
+    {
+        if(window != null)
+        {
+            window.WindowState = WindowState.Minimized;
+        }
+    }
 }
 
+public static class CornerRadiusHelper
+{
+    public static readonly DependencyProperty ValueProperty = DependencyProperty.RegisterAttached("Value", typeof(CornerRadius), typeof(CornerRadiusHelper), new PropertyMetadata(new CornerRadius(0)));
+
+    public static void SetValue(DependencyObject element, CornerRadius value)
+    {
+        element.SetValue(ValueProperty, value);
+    }
+
+    public static CornerRadius GetValue(DependencyObject element)
+    {
+        return (CornerRadius)element.GetValue(ValueProperty);
+    }
+}

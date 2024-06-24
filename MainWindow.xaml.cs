@@ -118,6 +118,12 @@ public partial class MainWindow : Window
         var loo = ShowWindow(MyWatcher.MyWindowHandle, ShowWindowCommands.Restore);
         SetForegroundWindow(MyWatcher.MyWindowHandle);
         lvMain.Focus();
+        if(lvMain.Items.Count > 0)
+        {
+            lvMain.SelectedItem = lvMain.Items[0];
+            ListViewItem item = lvMain.ItemContainerGenerator.ContainerFromIndex(0) as ListViewItem;
+            item.Focus();
+        }
     }
 
     private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
