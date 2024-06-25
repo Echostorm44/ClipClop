@@ -63,6 +63,9 @@ public partial class SettingsWindow : Window
             ddlMod.SelectedItem != null && ddlMod.SelectedItem is KeyModifier)
         {
             parent.SetNewHotkey((Key)ddlKey.SelectedItem, (KeyModifier)ddlMod.SelectedItem);
+            parent.Settings.ShowHotKey = (Key)ddlKey.SelectedItem;
+            parent.Settings.ShowHotKeyMod = (KeyModifier)ddlMod.SelectedItem;
+            parent.SaveAppSettings();
         }
     }
 }

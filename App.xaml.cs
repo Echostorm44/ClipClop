@@ -14,6 +14,7 @@ public partial class App : System.Windows.Application
     public static string? LogFolderPath { get; set; }
     public static string? ImageFolderPath { get; set; }
     public static string? SavedPinsPath { get; set; }
+    public static string? SettingsPath { get; set; }
 
     public App()
     {
@@ -25,6 +26,9 @@ public partial class App : System.Windows.Application
             + "\\ClipClop\\Images\\";
         SavedPinsPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
             + "\\ClipClop\\pins.json";
+        SettingsPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
+            + "\\ClipClop\\settings.json";
+
         if(!Directory.Exists(RootFolderPath))
         {
             Directory.CreateDirectory(RootFolderPath);
