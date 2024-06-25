@@ -27,7 +27,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace ClipClop;
 
-public partial class MainWindow : Window
+public partial class MainWindow : Window, INotifyPropertyChanged
 {
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -74,6 +74,27 @@ public partial class MainWindow : Window
     public ICommand ListViewEnterCommand { get; set; }
     public ICommand EscapeCommand { get; set; }
     public HotKey ShowHotKey;
+    string searchText;
+    public string SearchText
+    {
+        get
+        {
+            return searchText;
+        }
+        set
+        {
+            if(searchText == value)
+            {
+                return;
+            }
+
+            searchText = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SearchText)));
+            MyCollectionView.Refresh();
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public MainWindow()
     {
@@ -82,12 +103,26 @@ public partial class MainWindow : Window
         this.PasteClipCommand = new RelayCommand((a) => PasteClip((ClipItem)a));
         this.ListViewEnterCommand = new RelayCommand((a) => ListViewHitEnter());
         this.EscapeCommand = new RelayCommand((a) => EscapeButtonClick());
+
         ClipItems = new ObservableCollection<ClipItem>();
         MyCollectionView = CollectionViewSource.GetDefaultView(ClipItems) as ListCollectionView;
         MyCollectionView.IsLiveSorting = true;
         MyCollectionView.SortDescriptions.Add(new SortDescription("Pinned", ListSortDirection.Descending));
         MyCollectionView.SortDescriptions.Add(new SortDescription("DateTimeAdded", ListSortDirection.Descending));
-
+        MyCollectionView.IsLiveFiltering = true;
+        MyCollectionView.Filter = (a) =>
+        {
+            if(string.IsNullOrEmpty(SearchText))
+            {
+                return true;
+            }
+            var item = (ClipItem)a;
+            if(item == null || string.IsNullOrEmpty(item.Text))
+            {
+                return false;
+            }
+            return !item.IsImage && item.Text.ToLower().Contains(SearchText.ToLower());
+        };
         InitializeComponent();
         ShowHotKey = new HotKey(Key.W, KeyModifier.Ctrl, RestoreMe);
         this.DataContext = this;
