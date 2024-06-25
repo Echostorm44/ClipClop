@@ -54,6 +54,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="44"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
             </Grid.RowDefinitions>
             <tb:TaskbarIcon x:Name="myTaskBarIcon" Visibility="Visible"
                 IconSource="/Images/ClipClopIcon.ico">
@@ -85,6 +86,31 @@
                 </tb:TaskbarIcon.ContextMenu>
             </tb:TaskbarIcon>
 
+            <StackPanel Orientation="Horizontal" Grid.Row="2">
+                <TextBlock Text="Search" VerticalAlignment="Center"
+                           HorizontalAlignment="Center" Margin="10,0"
+                           FontSize="18"></TextBlock>
+                <Grid>
+                    <TextBox x:Name="txtSearchBox"
+                        HorizontalAlignment="Left" Height="26" Width="200" IsEnabled="True"
+                        FontSize="18" ToolTip="Search" Tag="Search" IsTabStop="True" 
+                        Text="{Binding Path=SearchText, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                    <TextBlock IsHitTestVisible="False" Text="Enter Search Term Here" 
+                               VerticalAlignment="Center" HorizontalAlignment="Left" 
+                               Margin="10,0,0,0" Foreground="DarkGray">
+                        <TextBlock.Style>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=txtSearchBox}" Value="">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>                
+            </StackPanel>            
             <Button BorderThickness="0" Background="#292a2a" Click="CloseButton_Click"
                     WindowChrome.IsHitTestVisibleInChrome="True"
                 VerticalAlignment="Top" HorizontalAlignment="Right" Margin="11,4">
@@ -98,6 +124,9 @@
                 <ListView.InputBindings>
                     <KeyBinding Key="Return"
         Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.ListViewEnterCommand}">
+                    </KeyBinding>
+                    <KeyBinding Key="S"
+        Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.QuickSelectCommand}">                        
                     </KeyBinding>
                 </ListView.InputBindings>
                 <ListView.ItemTemplate>
