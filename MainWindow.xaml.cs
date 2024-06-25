@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -76,6 +77,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     public ICommand SearchCommand { get; set; }
 
     public HotKey ShowHotKey;
+    public MySettings Settings;
     string searchText;
     public string SearchText
     {
@@ -115,7 +117,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         MyCollectionView.IsLiveFiltering = true;
         MyCollectionView.Filter = (a) =>
         {
-            if(string.IsNullOrEmpty(SearchText))
+            if(string.IsNullOrEmpty(SearchText) || a == null)
             {
                 return true;
             }
@@ -126,10 +128,30 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             }
             return !item.IsImage && item.Text.ToLower().Contains(SearchText.ToLower());
         };
+
+        if(!File.Exists(App.SettingsPath))
+        {
+            var set = new MySettings();
+            set.ShowHotKey = Key.W;
+            set.ShowHotKeyMod = KeyModifier.Ctrl;
+            var serializedSettings = JsonSerializer.Serialize(set);
+            Helpers.WriteFile(App.SettingsPath, serializedSettings);
+            Task.Delay(100).Wait();
+        }
+        // Load Saved Settings
+        var settingsRaw = Helpers.GetFileContents(App.SettingsPath);
+        Settings = JsonSerializer.Deserialize<MySettings>(settingsRaw);
+
         InitializeComponent();
-        ShowHotKey = new HotKey(Key.W, KeyModifier.Ctrl, RestoreMe);
+        ShowHotKey = new HotKey(Settings.ShowHotKey, Settings.ShowHotKeyMod, RestoreMe);
         this.DataContext = this;
         lvMain.ItemsSource = MyCollectionView;
+    }
+
+    public void SaveAppSettings()
+    {
+        var serializedSettings = JsonSerializer.Serialize(Settings);
+        Helpers.WriteFile(App.SettingsPath, serializedSettings);
     }
 
     public void SetNewHotkey(Key key, KeyModifier mod)
@@ -176,45 +198,52 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         pro = new Progress<RawClipboardItem>();
         pro.ProgressChanged += (s, e) =>
         {
-            if(e.Format == ClipboardFormat.Bitmap)
+            try
             {
-                var img = (BitmapSource)e.Data;
-                var existing = ClipItems.Where(b => b.IsImage).SingleOrDefault(a => 
-                    CompareMemCmp(Helpers.BitmapFromSource(img), Helpers.BitmapFromSource(a.Image)));
-                if(existing == null)
+                if(e.Format == ClipboardFormat.Bitmap)
                 {
-                    ClipItems.Add(new ClipItem()
+                    var img = (BitmapSource)e.Data;
+                    var existing = ClipItems.Where(b => b.IsImage).SingleOrDefault(a =>
+                        CompareMemCmp(Helpers.BitmapFromSource(img), Helpers.BitmapFromSource(a.Image)));
+                    if(existing == null)
                     {
-                        Text = "",
-                        DateTimeAdded = DateTime.Now,
-                        IsImage = true,
-                        Pinned = false,
-                        Image = img,
-                    });
+                        ClipItems.Add(new ClipItem()
+                        {
+                            Text = "",
+                            DateTimeAdded = DateTime.Now,
+                            IsImage = true,
+                            Pinned = false,
+                            Image = img,
+                        });
+                    }
+                    else
+                    {
+                        existing.DateTimeAdded = DateTime.Now;
+                    }
                 }
-                else
+                else if(e.Format == ClipboardFormat.Text || e.Format == ClipboardFormat.UnicodeText)
                 {
-                    existing.DateTimeAdded = DateTime.Now;
+                    var text = e.Data?.ToString() ?? "";
+                    var existingItem = ClipItems.SingleOrDefault(a => a.Text == text);
+                    if(existingItem == null)
+                    {
+                        ClipItems.Add(new ClipItem()
+                        {
+                            Text = text,
+                            DateTimeAdded = DateTime.Now,
+                            IsImage = false,
+                            Pinned = false,
+                        });
+                    }
+                    else
+                    {
+                        existingItem.DateTimeAdded = DateTime.Now;
+                    }
                 }
             }
-            else if(e.Format == ClipboardFormat.Text || e.Format == ClipboardFormat.UnicodeText)
+            catch(Exception ex)
             {
-                var text = e.Data?.ToString() ?? "";
-                var existingItem = ClipItems.SingleOrDefault(a => a.Text == text);
-                if(existingItem == null)
-                {
-                    ClipItems.Add(new ClipItem()
-                    {
-                        Text = text,
-                        DateTimeAdded = DateTime.Now,
-                        IsImage = false,
-                        Pinned = false,
-                    });
-                }
-                else
-                {
-                    existingItem.DateTimeAdded = DateTime.Now;
-                }
+                Helpers.WriteLogEntry(ex.ToString());
             }
         };
         MyWatcher = new ClipboardWatcher(this, pro);
@@ -285,6 +314,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             Clipboard.SetText(item.Text);
         }
         SendAltTabAndPaste();
+        ResetSearch();
         this.WindowState = WindowState.Minimized;
     }
 
@@ -352,6 +382,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
+        ResetSearch();
         this.WindowState = WindowState.Minimized;
     }
 
@@ -360,10 +391,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         this.Close();
     }
 
-    void EscapeButtonClick()
+    void ResetSearch()
     {
         txtSearchBox.Text = "";
         SearchText = "";
+    }
+
+    void EscapeButtonClick()
+    {
+        ResetSearch();
         this.WindowState = WindowState.Minimized;
     }
 
@@ -425,6 +461,12 @@ public class ClipItem : INotifyPropertyChanged
         }
     }
     public bool IsImage { get; set; }
+}
+
+public class MySettings
+{
+    public Key ShowHotKey { get; set; }
+    public KeyModifier ShowHotKeyMod { get; set; }
 }
 
 public class PinIconConverter : IValueConverter
