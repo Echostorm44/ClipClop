@@ -47,7 +47,7 @@
     </WindowChrome.WindowChrome>
     <Window.InputBindings>
         <KeyBinding Key="Esc" Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.EscapeCommand}">
-        </KeyBinding>
+        </KeyBinding>        
     </Window.InputBindings>
     <Border BorderThickness="0" CornerRadius="8" Background="#292a2a" BorderBrush="#292a2a">
         <Grid Margin="0" Background="#292a2a">
@@ -86,6 +86,9 @@
                 </tb:TaskbarIcon.ContextMenu>
             </tb:TaskbarIcon>
 
+            <Image HorizontalAlignment="Left" Height="23" Width="23" VerticalAlignment="Center"
+                   Source="/Images/ClipClopIcon.ico" Margin="15,0"></Image>
+            
             <StackPanel Orientation="Horizontal" Grid.Row="2">
                 <TextBlock Text="Search" VerticalAlignment="Center"
                            HorizontalAlignment="Center" Margin="10,0"
@@ -126,7 +129,7 @@
         Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.ListViewEnterCommand}">
                     </KeyBinding>
                     <KeyBinding Key="S"
-        Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.QuickSelectCommand}">                        
+        Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.SearchCommand}">
                     </KeyBinding>
                 </ListView.InputBindings>
                 <ListView.ItemTemplate>

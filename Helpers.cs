@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -33,6 +34,35 @@ public static class Helpers
                 tw.Write(entry);
             }
         }
+    }
+
+    public static string Encrypt(string clearText)
+    {
+        var inputBytes = Encoding.Unicode.GetBytes(clearText);
+        var outputBytes = AesConvert(inputBytes, aes => aes.CreateEncryptor());
+        return Convert.ToBase64String(outputBytes);
+    }
+
+    public static string Decrypt(string cipherText)
+    {
+        var inputBytes = Convert.FromBase64String(cipherText.Replace(" ", "+"));
+        var outputBytes = AesConvert(inputBytes, aes => aes.CreateDecryptor());
+        return Encoding.Unicode.GetString(outputBytes);
+    }
+
+    private static byte[] AesConvert(byte[] inputBytes, Func<Aes, ICryptoTransform> convert)
+    {
+        using var aes = Aes.Create();
+        var key = "populateThisFromAppSettings";
+        var salt = new byte[] { 0x52, 0x79, 0x62, 0x6e, 0x20, 0x4e, 0x61, 0x63, 0x62, 0x72, 0x62, 0x71, 0x6f };
+        var derivedBytes = new Rfc2898DeriveBytes(key, salt, 1000, HashAlgorithmName.SHA1);
+        aes.Key = derivedBytes.GetBytes(32);
+        aes.IV = derivedBytes.GetBytes(16);
+        using var ms = new MemoryStream();
+        using var cs = new CryptoStream(ms, convert(aes), CryptoStreamMode.Write);
+        cs.Write(inputBytes, 0, inputBytes.Length);
+        cs.Close();
+        return ms.ToArray();
     }
 
     public static string GetFileContents(string fileName)

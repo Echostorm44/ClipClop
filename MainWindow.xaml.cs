@@ -73,6 +73,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     public ICommand PasteClipCommand { get; set; }
     public ICommand ListViewEnterCommand { get; set; }
     public ICommand EscapeCommand { get; set; }
+    public ICommand SearchCommand { get; set; }
+
     public HotKey ShowHotKey;
     string searchText;
     public string SearchText
@@ -103,6 +105,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         this.PasteClipCommand = new RelayCommand((a) => PasteClip((ClipItem)a));
         this.ListViewEnterCommand = new RelayCommand((a) => ListViewHitEnter());
         this.EscapeCommand = new RelayCommand((a) => EscapeButtonClick());
+        this.SearchCommand = new RelayCommand((a) => SearchHotkeyHit());
 
         ClipItems = new ObservableCollection<ClipItem>();
         MyCollectionView = CollectionViewSource.GetDefaultView(ClipItems) as ListCollectionView;
@@ -217,6 +220,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         MyWatcher = new ClipboardWatcher(this, pro);
         WindowPlacement.ApplyPlacement(this);
         var savedPins = Helpers.GetFileContents(App.SavedPinsPath);
+        savedPins = Helpers.Decrypt(savedPins);
         if(!string.IsNullOrEmpty(savedPins))
         {
             var pins = JsonSerializer.Deserialize<List<ClipItem>>(savedPins);
@@ -256,6 +260,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             }
 
             var serializedPins = JsonSerializer.Serialize(pins);
+            serializedPins = Helpers.Encrypt(serializedPins);
             Helpers.WriteFile(App.SavedPinsPath, serializedPins);
         }
     }
@@ -357,6 +362,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     void EscapeButtonClick()
     {
+        txtSearchBox.Text = "";
+        SearchText = "";
         this.WindowState = WindowState.Minimized;
     }
 
@@ -366,6 +373,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         settings.ShowDialog();
         //myTaskBarIcon.ShowBalloonTip("Settings", "Settings are not yet implemented", 
         //    Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Warning);
+    }
+
+    private void SearchHotkeyHit()
+    {
+        txtSearchBox.Focus();
     }
 }
 
