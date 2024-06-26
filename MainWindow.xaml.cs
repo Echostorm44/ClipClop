@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualBasic;
+﻿#nullable disable
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -9,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Net.NetworkInformation;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
@@ -45,6 +47,20 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     [DllImport("user32.dll")]
     private static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommands nCmdShow);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+
+    [DllImport("user32.dll")]
+    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
+    [DllImport("user32.dll")]
+    private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+    private const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
 
     private enum ShowWindowCommands : int
     {
@@ -134,6 +150,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             var set = new MySettings();
             set.ShowHotKey = Key.W;
             set.ShowHotKeyMod = KeyModifier.Ctrl;
+            set.LaunchAtStartup = true;
+            set.OpenAtMousePointer = true;
+            Helpers.SetStartup();
             var serializedSettings = JsonSerializer.Serialize(set);
             Helpers.WriteFile(App.SettingsPath, serializedSettings);
             Task.Delay(100).Wait();
@@ -150,15 +169,31 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     public void SaveAppSettings()
     {
-        var serializedSettings = JsonSerializer.Serialize(Settings);
-        Helpers.WriteFile(App.SettingsPath, serializedSettings);
+        try
+        {
+            var serializedSettings = JsonSerializer.Serialize(Settings);
+            Helpers.WriteFile(App.SettingsPath, serializedSettings);
+        }
+        catch(Exception ex)
+        {
+            myTaskBarIcon.ShowBalloonTip("Error", ex.Message, Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Error);
+            Helpers.WriteLogEntry(ex.ToString());
+        }
     }
 
     public void SetNewHotkey(Key key, KeyModifier mod)
     {
-        ShowHotKey.Unregister();
-        ShowHotKey.Dispose();
-        ShowHotKey = new HotKey(key, mod, RestoreMe);
+        try
+        {
+            ShowHotKey.Unregister();
+            ShowHotKey.Dispose();
+            ShowHotKey = new HotKey(key, mod, RestoreMe);
+        }
+        catch(Exception ex)
+        {
+            myTaskBarIcon.ShowBalloonTip("Error", ex.Message, Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Error);
+            Helpers.WriteLogEntry(ex.ToString());
+        }
     }
 
     void ListViewHitEnter()
@@ -171,26 +206,76 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         PasteClip(foo);
     }
 
+    public static bool MoveWindowToPosition(int x, int y, IntPtr hWnd, int height, int width)
+    {
+        if(hWnd == IntPtr.Zero)
+        {
+            return false;
+        }
+        IntPtr hMonitor = MonitorFromPoint(new POINT(x, y), MONITOR_DEFAULTTONEAREST);
+        MONITORINFO monitorInfo = new MONITORINFO();
+        monitorInfo.cbSize = (uint)Marshal.SizeOf(typeof(MONITORINFO));
+        if(!GetMonitorInfo(hMonitor, ref monitorInfo))
+        {
+            return false;
+        }
+        if(!GetWindowRect(hWnd, out RECT windowRect))
+        {
+            return false;
+        }
+        int windowWidth = windowRect.Right - windowRect.Left;
+        int windowHeight = windowRect.Bottom - windowRect.Top;
+
+        // Calculate center position
+        int centerX = monitorInfo.rcWork.Left + ((monitorInfo.rcWork.Right - monitorInfo.rcWork.Left - windowWidth) / 2);
+        int centerY = monitorInfo.rcWork.Top + ((monitorInfo.rcWork.Bottom - monitorInfo.rcWork.Top - windowHeight) / 2);
+
+        // Move the window without changing its size
+        return MoveWindow(hWnd, centerX, centerY, width, height, true);
+    }
+
     public void RestoreMe(HotKey hotKey)
     {
-        this.Show();
-        this.WindowState = WindowState.Normal;
-        var loo = ShowWindow(MyWatcher.MyWindowHandle, ShowWindowCommands.Restore);
-        SetForegroundWindow(MyWatcher.MyWindowHandle);
-        lvMain.Focus();
-        if(lvMain.Items.Count > 0)
+        try
         {
-            lvMain.SelectedItem = lvMain.Items[0];
-            ListViewItem item = lvMain.ItemContainerGenerator.ContainerFromIndex(0) as ListViewItem;
-            item.Focus();
+            this.Show();
+            this.WindowState = WindowState.Normal;
+            ShowWindow(MyWatcher.MyWindowHandle, ShowWindowCommands.Restore);
+            SetForegroundWindow(MyWatcher.MyWindowHandle);
+            if(Settings.OpenAtMousePointer)
+            {
+                var mouseLoc = CursorPosition.GetCursorPosition();
+                MoveWindowToPosition((int)mouseLoc.X, (int)mouseLoc.Y, MyWatcher.MyWindowHandle,
+                    (int)this.Height, (int)this.Width);
+            }
+            lvMain.Focus();
+            if(lvMain.Items.Count > 0)
+            {
+                lvMain.SelectedItem = lvMain.Items[0];
+                ListViewItem item = lvMain.ItemContainerGenerator.ContainerFromIndex(0) as ListViewItem;
+                item.Focus();
+            }
+        }
+        catch(Exception ex)
+        {
+            myTaskBarIcon.ShowBalloonTip("Error", ex.Message, Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Error);
+            Helpers.WriteLogEntry(ex.ToString());
         }
     }
 
     private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
     {
-        WindowPlacement.SavePlacement(this);
-        MyWatcher.Dispose();
-        ShowHotKey.Unregister();
+        try
+        {
+            WindowPlacement.SavePlacement(this);
+            MyWatcher.Dispose();
+            ShowHotKey.Unregister();
+        }
+        catch(Exception ex)
+        {
+            myTaskBarIcon.ShowBalloonTip("Error", ex.Message, Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Error);
+            Helpers.WriteLogEntry(ex.ToString());
+        }
     }
 
     private void Window_SourceInitialized(object sender, EventArgs e)
@@ -243,54 +328,71 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             }
             catch(Exception ex)
             {
+                myTaskBarIcon.ShowBalloonTip("Error", ex.Message, Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Error);
                 Helpers.WriteLogEntry(ex.ToString());
             }
         };
-        MyWatcher = new ClipboardWatcher(this, pro);
-        WindowPlacement.ApplyPlacement(this);
-        var savedPins = Helpers.GetFileContents(App.SavedPinsPath);
-        savedPins = Helpers.Decrypt(savedPins);
-        if(!string.IsNullOrEmpty(savedPins))
+        try
         {
-            var pins = JsonSerializer.Deserialize<List<ClipItem>>(savedPins);
-            foreach(var pin in pins)
+            MyWatcher = new ClipboardWatcher(this, pro);
+            WindowPlacement.ApplyPlacement(this);
+            var savedPins = Helpers.GetFileContents(App.SavedPinsPath);
+            savedPins = Helpers.Decrypt(savedPins);
+            if(!string.IsNullOrEmpty(savedPins))
             {
-                if(pin.IsImage)
+                var pins = JsonSerializer.Deserialize<List<ClipItem>>(savedPins);
+                foreach(var pin in pins)
                 {
-                    pin.Image = Helpers.LoadBitmapSourceFromFile(pin.ImageFilePath);
+                    if(pin.IsImage)
+                    {
+                        pin.Image = Helpers.LoadBitmapSourceFromFile(pin.ImageFilePath);
+                    }
+                    ClipItems.Add(pin);
                 }
-                ClipItems.Add(pin);
             }
+            lvMain.Focus();
         }
-        lvMain.Focus();
+        catch(Exception ex)
+        {
+            myTaskBarIcon.ShowBalloonTip("Error", ex.Message, Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Error);
+            Helpers.WriteLogEntry(ex.ToString());
+        }
     }
 
     private void TogglePin(ClipItem item)
     {
         if(item != null)
         {
-            item.Pinned = !item.Pinned;
-            // Save pinned images, delete unpinned images, overwrite saved pins file            
-            var unsavedImages = ClipItems.Where(a => a.IsImage && string.IsNullOrEmpty(a.ImageFilePath)).ToList();
-            foreach(var unsaved in unsavedImages)
+            try
             {
-                var fileName = unsaved.DateTimeAdded.ToString("yyyy-MM-dd-HH-mm-ss") + ".png";
-                var filePath = System.IO.Path.Combine(App.ImageFolderPath, fileName);
-                Helpers.SaveBitmapSourceToFile(filePath, unsaved.Image);
-                unsaved.ImageFilePath = filePath;
-            }
-            var pins = ClipItems.Where(a => a.Pinned).ToList();
+                item.Pinned = !item.Pinned;
+                // Save pinned images, delete unpinned images, overwrite saved pins file            
+                var unsavedImages = ClipItems.Where(a => a.IsImage && string.IsNullOrEmpty(a.ImageFilePath)).ToList();
+                foreach(var unsaved in unsavedImages)
+                {
+                    var fileName = unsaved.DateTimeAdded.ToString("yyyy-MM-dd-HH-mm-ss") + ".png";
+                    var filePath = System.IO.Path.Combine(App.ImageFolderPath, fileName);
+                    Helpers.SaveBitmapSourceToFile(filePath, unsaved.Image);
+                    unsaved.ImageFilePath = filePath;
+                }
+                var pins = ClipItems.Where(a => a.Pinned).ToList();
 
-            var toDelete = ClipItems.Where(a => !a.Pinned && !string.IsNullOrEmpty(a.ImageFilePath)).ToList();
-            foreach(var dieImgDie in toDelete)
+                var toDelete = ClipItems.Where(a => !a.Pinned && !string.IsNullOrEmpty(a.ImageFilePath)).ToList();
+                foreach(var dieImgDie in toDelete)
+                {
+                    File.Delete(dieImgDie.ImageFilePath);
+                    dieImgDie.ImageFilePath = "";
+                }
+
+                var serializedPins = JsonSerializer.Serialize(pins);
+                serializedPins = Helpers.Encrypt(serializedPins);
+                Helpers.WriteFile(App.SavedPinsPath, serializedPins);
+            }
+            catch(Exception ex)
             {
-                File.Delete(dieImgDie.ImageFilePath);
-                dieImgDie.ImageFilePath = "";
+                myTaskBarIcon.ShowBalloonTip("Error", ex.Message, Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Error);
+                Helpers.WriteLogEntry(ex.ToString());
             }
-
-            var serializedPins = JsonSerializer.Serialize(pins);
-            serializedPins = Helpers.Encrypt(serializedPins);
-            Helpers.WriteFile(App.SavedPinsPath, serializedPins);
         }
     }
 
@@ -320,32 +422,40 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     public static void SendAltTabAndPaste()
     {
-        // Press Alt key
-        keybd_event(VK_MENU, 0, 0, UIntPtr.Zero);
+        try
+        {
+            // Press Alt key
+            keybd_event(VK_MENU, 0, 0, UIntPtr.Zero);
 
-        // Press Tab key
-        keybd_event(VK_TAB, 0, 0, UIntPtr.Zero);
+            // Press Tab key
+            keybd_event(VK_TAB, 0, 0, UIntPtr.Zero);
 
-        // Release Tab key
-        keybd_event(VK_TAB, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+            // Release Tab key
+            keybd_event(VK_TAB, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
 
-        // Release Alt key
-        keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+            // Release Alt key
+            keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
 
-        // Wait for a short delay to allow the window to switch
-        System.Threading.Thread.Sleep(500);
+            // Wait for a short delay to allow the window to switch
+            System.Threading.Thread.Sleep(500);
 
-        // Press Ctrl key
-        keybd_event(VK_CONTROL, 0, 0, UIntPtr.Zero);
+            // Press Ctrl key
+            keybd_event(VK_CONTROL, 0, 0, UIntPtr.Zero);
 
-        // Press V key
-        keybd_event(VK_V, 0, 0, UIntPtr.Zero);
+            // Press V key
+            keybd_event(VK_V, 0, 0, UIntPtr.Zero);
 
-        // Release V key
-        keybd_event(VK_V, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+            // Release V key
+            keybd_event(VK_V, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
 
-        // Release Ctrl key
-        keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+            // Release Ctrl key
+            keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+        }
+        catch(Exception ex)
+        {
+            myTaskBarIcon.ShowBalloonTip("Error", ex.Message, Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Error);
+            Helpers.WriteLogEntry(ex.ToString());
+        }
     }
 
     public static bool CompareMemCmp(Bitmap b1, Bitmap b2)
@@ -407,8 +517,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         SettingsWindow settings = new SettingsWindow(this);
         settings.ShowDialog();
-        //myTaskBarIcon.ShowBalloonTip("Settings", "Settings are not yet implemented", 
-        //    Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Warning);
     }
 
     private void SearchHotkeyHit()
@@ -467,6 +575,8 @@ public class MySettings
 {
     public Key ShowHotKey { get; set; }
     public KeyModifier ShowHotKeyMod { get; set; }
+    public bool LaunchAtStartup { get; set; }
+    public bool OpenAtMousePointer { get; set; }
 }
 
 public class PinIconConverter : IValueConverter
