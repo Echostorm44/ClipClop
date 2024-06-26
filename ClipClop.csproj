@@ -14,14 +14,6 @@
     <None Remove="Fonts\FontAwesomeSolid.otf" />
     <None Remove="Images\ClipClopIcon.ico" />
     <None Remove="Images\ClipClopIcon.png" />
-    <None Remove="Images\Close.png" />
-    <None Remove="Images\Settings.png" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Images\Close.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -40,9 +32,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Content Include="Images\ClipClopIcon.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Images\Settings.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

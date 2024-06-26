@@ -32,18 +32,14 @@ namespace ClipClop;
 
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
+    #region Declarations
+
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     static extern bool SetForegroundWindow(IntPtr hWnd);
 
     [DllImport("msvcrt.dll")]
     private static extern int memcmp(IntPtr b1, IntPtr b2, long count);
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetWindow(IntPtr hWnd, uint wCmd);
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetForegroundWindow();
 
     [DllImport("user32.dll")]
     private static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommands nCmdShow);
@@ -60,6 +56,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     [DllImport("user32.dll")]
     private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
+    [DllImport("user32.dll")]
+    private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+
     private const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
 
     private enum ShowWindowCommands : int
@@ -70,9 +69,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         /// </summary>
         Restore = 9,
     }
-
-    [DllImport("user32.dll")]
-    private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
 
     private const byte VK_MENU = 0x12;
     private const byte VK_TAB = 0x09;
@@ -115,6 +111,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    #endregion
 
     public MainWindow()
     {
@@ -202,8 +200,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             return;
         }
-        var foo = (ClipItem)lvMain.SelectedItem;
-        PasteClip(foo);
+        var selectedItem = (ClipItem)lvMain.SelectedItem;
+        PasteClip(selectedItem);
     }
 
     public static bool MoveWindowToPosition(int x, int y, IntPtr hWnd, int height, int width)
@@ -335,6 +333,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         try
         {
             MyWatcher = new ClipboardWatcher(this, pro);
+            // Put the window back to the last place it was in case we have a spot like Sheldon
             WindowPlacement.ApplyPlacement(this);
             var savedPins = Helpers.GetFileContents(App.SavedPinsPath);
             savedPins = Helpers.Decrypt(savedPins);
@@ -403,21 +402,29 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     void PasteClip(ClipItem item)
     {
-        if(item == null)
+        try
         {
-            return;
+            if(item == null)
+            {
+                return;
+            }
+            if(item.IsImage)
+            {
+                Clipboard.SetImage(item.Image);
+            }
+            else
+            {
+                Clipboard.SetText(item.Text);
+            }
+            SendAltTabAndPaste();
+            ResetSearch();
+            this.WindowState = WindowState.Minimized;
         }
-        if(item.IsImage)
+        catch(Exception ex)
         {
-            Clipboard.SetImage(item.Image);
+            myTaskBarIcon.ShowBalloonTip("Error", ex.Message, Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Error);
+            Helpers.WriteLogEntry(ex.ToString());
         }
-        else
-        {
-            Clipboard.SetText(item.Text);
-        }
-        SendAltTabAndPaste();
-        ResetSearch();
-        this.WindowState = WindowState.Minimized;
     }
 
     public static void SendAltTabAndPaste()
@@ -453,7 +460,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
         catch(Exception ex)
         {
-            myTaskBarIcon.ShowBalloonTip("Error", ex.Message, Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Error);
             Helpers.WriteLogEntry(ex.ToString());
         }
     }
@@ -579,6 +585,8 @@ public class MySettings
     public bool OpenAtMousePointer { get; set; }
 }
 
+#region Converters
+
 public class PinIconConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -649,6 +657,8 @@ public class PercentageConverter : MarkupExtension, IValueConverter
         return _instance ?? (_instance = new PercentageConverter());
     }
 }
+
+#endregion
 
 public class RelayCommand : ICommand
 {

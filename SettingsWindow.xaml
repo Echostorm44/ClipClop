@@ -26,6 +26,8 @@
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="150"></ColumnDefinition>
@@ -62,6 +64,17 @@
             <CheckBox x:Name="chkOpenAtMouse" Grid.Row="4" Content="Open on Monitor Where Mouse Pointer Is"
                 FontSize="17" Grid.ColumnSpan="3" Checked="chkOpenAtMouse_Checked" Margin="10">
             </CheckBox>
+            <TextBlock Grid.Row="5" Grid.ColumnSpan="3" TextWrapping="Wrap" FontSize="17"
+                       Margin="10">
+                <TextBlock.Text>
+                    Slapped together by Adam Marciniec
+                </TextBlock.Text>
+            </TextBlock>
+            <Button x:Name="btnSource" Grid.Row="6" Grid.ColumnSpan="3"
+                    Content="Source Code" FontSize="17"
+                    Margin="10"
+                    Click="btnSource_Click">                
+            </Button>
         </Grid>
     </Border>
 </Window>

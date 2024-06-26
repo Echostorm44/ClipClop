@@ -1,7 +1,9 @@
 ﻿#nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -98,5 +100,11 @@ public partial class SettingsWindow : Window
         }
         parent.Settings.OpenAtMousePointer = chkOpenAtMouse.IsChecked.Value;
         parent.SaveAppSettings();
+    }
+
+    private void btnSource_Click(object sender, RoutedEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo("https://github.com/Echostorm44/ClipClop") 
+            { UseShellExecute = true });
     }
 }
