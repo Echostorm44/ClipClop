@@ -21,11 +21,11 @@
         <Grid Margin="0" Background="#292a2a">
             <Grid.RowDefinitions>
                 <RowDefinition Height="44"></RowDefinition>
-                <RowDefinition Height="40"></RowDefinition>
-                <RowDefinition Height="30"></RowDefinition>
-                <RowDefinition Height="30"></RowDefinition>
-                <RowDefinition Height="30"></RowDefinition>
-                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="150"></ColumnDefinition>
@@ -47,15 +47,21 @@
             
             <Label Content="Key" Grid.Column="1" Grid.Row="1" Foreground="GhostWhite"
                    FontSize="17" VerticalAlignment="Center" HorizontalAlignment="Left"></Label>
-            <ComboBox Name="ddlKey" Grid.Column="1" Grid.Row="2" Width="100"
+            <ComboBox Name="ddlKey" Grid.Column="1" Grid.Row="2" Width="100" FontSize="17"
                       HorizontalAlignment="Left" SelectionChanged="HotkeySelection_SelectionChanged"></ComboBox>
 
             <Label Content="Modifier" Grid.Column="2" Grid.Row="1" Foreground="GhostWhite"
                 FontSize="17" VerticalAlignment="Center" HorizontalAlignment="Left"></Label>
-            <ComboBox Name="ddlMod" Grid.Column="2" Grid.Row="2" Width="100"
+            <ComboBox Name="ddlMod" Grid.Column="2" Grid.Row="2" Width="100" FontSize="17"
                 HorizontalAlignment="Left" SelectionChanged="HotkeySelection_SelectionChanged"></ComboBox>
 
-            <Label Name="lblTest" Grid.Row="4"></Label>
+            <CheckBox x:Name="chkLaunchAtStartup" Grid.Row="3" Content="Launch at Startup"
+                      FontSize="17" Grid.ColumnSpan="3" Checked="chkLaunchAtStartup_Checked" Margin="10">                
+            </CheckBox>
+
+            <CheckBox x:Name="chkOpenAtMouse" Grid.Row="4" Content="Open on Monitor Where Mouse Pointer Is"
+                FontSize="17" Grid.ColumnSpan="3" Checked="chkOpenAtMouse_Checked" Margin="10">
+            </CheckBox>
         </Grid>
     </Border>
 </Window>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -50,6 +51,8 @@ public partial class SettingsWindow : Window
         ddlMod.ItemsSource = modList;
         ddlKey.SelectedItem = parent.ShowHotKey.Key;
         ddlMod.SelectedItem = parent.ShowHotKey.KeyModifiers;
+        chkLaunchAtStartup.IsChecked = parent.Settings.LaunchAtStartup;
+        chkOpenAtMouse.IsChecked = parent.Settings.OpenAtMousePointer;
         initializing = false;
     }
 
@@ -67,5 +70,33 @@ public partial class SettingsWindow : Window
             parent.Settings.ShowHotKeyMod = (KeyModifier)ddlMod.SelectedItem;
             parent.SaveAppSettings();
         }
+    }
+
+    private void chkLaunchAtStartup_Checked(object sender, RoutedEventArgs e)
+    {
+        if(initializing)
+        {
+            return;
+        }
+        parent.Settings.LaunchAtStartup = chkLaunchAtStartup.IsChecked.Value;
+        parent.SaveAppSettings();
+        if(chkLaunchAtStartup.IsChecked.Value)
+        {
+            Helpers.SetStartup();
+        }
+        else
+        {
+            Helpers.RemoveStartup();
+        }
+    }
+
+    private void chkOpenAtMouse_Checked(object sender, RoutedEventArgs e)
+    {
+        if(initializing)
+        {
+            return;
+        }
+        parent.Settings.OpenAtMousePointer = chkOpenAtMouse.IsChecked.Value;
+        parent.SaveAppSettings();
     }
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable disable
+using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -123,6 +125,28 @@ public static class Helpers
             bitmap = new Bitmap(outStream);
         }
         return bitmap;
+    }
+
+    public static void SetStartup()
+    {
+        RegistryKey rk = Registry.CurrentUser.OpenSubKey
+            ("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+        var exeFilePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+        var launcherPath = System.IO.Path.GetDirectoryName(exeFilePath) + "\\launcher.exe";
+
+        if(File.Exists(launcherPath))
+        {// If the launcher exists we should use that so we get automatic updates.
+            exeFilePath = launcherPath;
+        }
+
+        rk.SetValue("ClipClop", exeFilePath);
+    }
+
+    public static void RemoveStartup()
+    {
+        RegistryKey rk = Registry.CurrentUser.OpenSubKey
+            ("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+        rk.DeleteValue("ClipClop", false);
     }
 }
 
@@ -264,3 +288,36 @@ public struct WINDOWPLACEMENT
     public RECT normalPosition;
 }
 
+internal static class CursorPosition
+{
+    [StructLayout(LayoutKind.Sequential)]
+    public struct PointInter
+    {
+        public int X;
+        public int Y;
+        public static explicit operator System.Windows.Point(PointInter point)
+        {
+            return new System.Windows.Point(point.X, point.Y);
+        }
+    }
+
+    [DllImport("user32.dll")]
+    public static extern bool GetCursorPos(out PointInter lpPoint);
+
+    // For your convenience
+    public static System.Windows.Point GetCursorPosition()
+    {
+        PointInter lpPoint;
+        GetCursorPos(out lpPoint);
+        return (System.Windows.Point)lpPoint;
+    }
+}
+
+[StructLayout(LayoutKind.Sequential)]
+public struct MONITORINFO
+{
+    public uint cbSize;
+    public RECT rcMonitor;
+    public RECT rcWork;
+    public uint dwFlags;
+}
