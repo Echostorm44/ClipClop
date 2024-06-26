@@ -47,11 +47,11 @@ public partial class SettingsWindow : Window
     private void Window_SourceInitialized(object sender, EventArgs e)
     {
         initializing = true;
-        var keyList = Enum.GetValues(typeof(Key)).Cast<Key>().ToList();
-        ddlKey.ItemsSource = keyList;
+        var altKeyList = Enum.GetNames(typeof(Key)).ToList();
+        ddlKey.ItemsSource = altKeyList;
         var modList = Enum.GetValues(typeof(KeyModifier)).Cast<KeyModifier>().ToList();
         ddlMod.ItemsSource = modList;
-        ddlKey.SelectedItem = parent.ShowHotKey.Key;
+        ddlKey.SelectedItem = parent.ShowHotKey.Key.ToString();
         ddlMod.SelectedItem = parent.ShowHotKey.KeyModifiers;
         chkLaunchAtStartup.IsChecked = parent.Settings.LaunchAtStartup;
         chkOpenAtMouse.IsChecked = parent.Settings.OpenAtMousePointer;
@@ -64,14 +64,15 @@ public partial class SettingsWindow : Window
         {
             return;
         }
-        if(ddlKey.SelectedItem != null && ddlKey.SelectedItem is Key && 
-            ddlMod.SelectedItem != null && ddlMod.SelectedItem is KeyModifier)
+        if(ddlKey.SelectedItem == null || ddlMod.SelectedItem == null)
         {
-            parent.SetNewHotkey((Key)ddlKey.SelectedItem, (KeyModifier)ddlMod.SelectedItem);
-            parent.Settings.ShowHotKey = (Key)ddlKey.SelectedItem;
-            parent.Settings.ShowHotKeyMod = (KeyModifier)ddlMod.SelectedItem;
-            parent.SaveAppSettings();
+            return;
         }
+        var key = (Key)Enum.Parse(typeof(Key), ddlKey.SelectedItem.ToString());
+        parent.SetNewHotkey(key, (KeyModifier)ddlMod.SelectedItem);
+        parent.Settings.ShowHotKey = key;
+        parent.Settings.ShowHotKeyMod = (KeyModifier)ddlMod.SelectedItem;
+        parent.SaveAppSettings();
     }
 
     private void chkLaunchAtStartup_Checked(object sender, RoutedEventArgs e)
