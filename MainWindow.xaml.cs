@@ -500,6 +500,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         ResetSearch();
         this.WindowState = WindowState.Minimized;
+        this.Hide();
     }
 
     void ExitButton(object sender, RoutedEventArgs e)
@@ -517,6 +518,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         ResetSearch();
         this.WindowState = WindowState.Minimized;
+        this.Hide();
     }
 
     private void Settings_Click(object sender, RoutedEventArgs e)
