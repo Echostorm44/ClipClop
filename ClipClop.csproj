@@ -10,9 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="appIcon.ico" />
     <None Remove="Fonts\FontAwesomeReg.otf" />
     <None Remove="Fonts\FontAwesomeSolid.otf" />
-    <None Remove="Images\ClipClopIcon.ico" />
     <None Remove="Images\ClipClopIcon.png" />
   </ItemGroup>
 
@@ -22,13 +22,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="appIcon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Fonts\FontAwesomeReg.otf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Fonts\FontAwesomeSolid.otf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\ClipClopIcon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Content Include="Images\ClipClopIcon.png">

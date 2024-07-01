@@ -140,7 +140,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             {
                 return false;
             }
-            return !item.IsImage && item.Text.ToLower().Contains(SearchText.ToLower());
+            return !item.IsImage && item.Text.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
         };
 
         if(!File.Exists(App.SettingsPath))

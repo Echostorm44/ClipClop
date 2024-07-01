@@ -8,7 +8,7 @@
         SourceInitialized="Window_SourceInitialized"
         BorderThickness="0" WindowStyle="None" ShowInTaskbar="False"
         xmlns:tb="http://www.hardcodet.net/taskbar"
-        Title="ClipClop" MinHeight="450" MinWidth="700" Icon="/Images/ClipClopIcon.ico">
+        Title="ClipClop" MinHeight="450" MinWidth="700" Icon="/appIcon.ico">
     <Window.Resources>
         <local:PinIconConverter x:Key="PinIconConverter" />
         <local:FalseBoolToVisConverter x:Key="FalseBoolToVisConverter"/>
@@ -56,8 +56,8 @@
                 <RowDefinition Height="*"></RowDefinition>
                 <RowDefinition Height="30"></RowDefinition>
             </Grid.RowDefinitions>
-            <tb:TaskbarIcon x:Name="myTaskBarIcon" Visibility="Visible"
-                IconSource="/Images/ClipClopIcon.ico">
+            <tb:TaskbarIcon x:Name="myTaskBarIcon" Visibility="Visible" 
+                IconSource="/appIcon.ico">
                 <tb:TaskbarIcon.ContextMenu>
                     <ContextMenu FontSize="22" Background="#292a2a"
                      Margin="0" Padding="0"
@@ -87,7 +87,7 @@
             </tb:TaskbarIcon>
 
             <Image HorizontalAlignment="Left" Height="23" Width="23" VerticalAlignment="Center"
-                   Source="/Images/ClipClopIcon.ico" Margin="15,0"></Image>
+                   Source="/appIcon.ico" Margin="15,0"></Image>
             
             <StackPanel Orientation="Horizontal" Grid.Row="2">
                 <TextBlock Text="Search" VerticalAlignment="Center"
