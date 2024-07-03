@@ -48,11 +48,10 @@ public partial class SettingsWindow : Window
     {
         initializing = true;
         var altKeyList = Enum.GetNames(typeof(Key)).ToList();
-        ddlKey.ItemsSource = altKeyList;
         var modList = Enum.GetValues(typeof(KeyModifier)).Cast<KeyModifier>().ToList();
         ddlMod.ItemsSource = modList;
-        ddlKey.SelectedItem = parent.ShowHotKey.Key.ToString();
         ddlMod.SelectedItem = parent.ShowHotKey.KeyModifiers;
+        txtHotKey.Text = parent.ShowHotKey.Key.ToString();
         chkLaunchAtStartup.IsChecked = parent.Settings.LaunchAtStartup;
         chkOpenAtMouse.IsChecked = parent.Settings.OpenAtMousePointer;
         initializing = false;
@@ -64,11 +63,11 @@ public partial class SettingsWindow : Window
         {
             return;
         }
-        if(ddlKey.SelectedItem == null || ddlMod.SelectedItem == null)
+        if(ddlMod.SelectedItem == null)
         {
             return;
         }
-        var key = (Key)Enum.Parse(typeof(Key), ddlKey.SelectedItem.ToString());
+        var key = parent.Settings.ShowHotKey;
         parent.SetNewHotkey(key, (KeyModifier)ddlMod.SelectedItem);
         parent.Settings.ShowHotKey = key;
         parent.Settings.ShowHotKeyMod = (KeyModifier)ddlMod.SelectedItem;
@@ -107,5 +106,20 @@ public partial class SettingsWindow : Window
     {
         Process.Start(new ProcessStartInfo("https://github.com/Echostorm44/ClipClop") 
             { UseShellExecute = true });
+    }
+
+    private void txtHotKey_PreviewKeyUp(object sender, KeyEventArgs e)
+    {
+        var key = e.Key;
+        parent.SetNewHotkey(key, parent.Settings.ShowHotKeyMod);
+        parent.Settings.ShowHotKey = key;
+        parent.SaveAppSettings();
+        txtHotKey.Text = key.ToString();
+        ddlMod.Focus();
+    }
+
+    private void txtHotKey_GotFocus(object sender, RoutedEventArgs e)
+    {
+        txtHotKey.Text = "";
     }
 }
