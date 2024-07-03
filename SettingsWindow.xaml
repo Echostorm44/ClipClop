@@ -49,20 +49,26 @@
             
             <Label Content="Key" Grid.Column="1" Grid.Row="1" Foreground="GhostWhite"
                    FontSize="17" VerticalAlignment="Center" HorizontalAlignment="Left"></Label>
-            <ComboBox Name="ddlKey" Grid.Column="1" Grid.Row="2" Width="100" FontSize="17"
-                      HorizontalAlignment="Left" SelectionChanged="HotkeySelection_SelectionChanged"></ComboBox>
+            
+            <TextBox x:Name="txtHotKey" PreviewKeyUp="txtHotKey_PreviewKeyUp"
+                     VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                     GotFocus="txtHotKey_GotFocus"
+                     Grid.Row="2" Grid.Column="1" Width="Auto" MaxLength="1">                
+            </TextBox>
 
             <Label Content="Modifier" Grid.Column="2" Grid.Row="1" Foreground="GhostWhite"
                 FontSize="17" VerticalAlignment="Center" HorizontalAlignment="Left"></Label>
-            <ComboBox Name="ddlMod" Grid.Column="2" Grid.Row="2" Width="100" FontSize="17"
+            <ComboBox Name="ddlMod" Grid.Column="2" Grid.Row="2" Width="111" FontSize="17"
                 HorizontalAlignment="Left" SelectionChanged="HotkeySelection_SelectionChanged"></ComboBox>
 
             <CheckBox x:Name="chkLaunchAtStartup" Grid.Row="3" Content="Launch at Startup"
-                      FontSize="17" Grid.ColumnSpan="3" Checked="chkLaunchAtStartup_Checked" Margin="10">                
+                      FontSize="17" Grid.ColumnSpan="3" Checked="chkLaunchAtStartup_Checked" Margin="10"
+                      Unchecked="chkLaunchAtStartup_Checked">                
             </CheckBox>
 
             <CheckBox x:Name="chkOpenAtMouse" Grid.Row="4" Content="Open on Monitor Where Mouse Pointer Is"
-                FontSize="17" Grid.ColumnSpan="3" Checked="chkOpenAtMouse_Checked" Margin="10">
+                FontSize="17" Grid.ColumnSpan="3" Checked="chkOpenAtMouse_Checked" Margin="10"
+                      Unchecked="chkOpenAtMouse_Checked">
             </CheckBox>
             <TextBlock Grid.Row="5" Grid.ColumnSpan="3" TextWrapping="Wrap" FontSize="17"
                        Margin="10">

@@ -54,7 +54,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="44"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
-                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="60"></RowDefinition>
             </Grid.RowDefinitions>
             <tb:TaskbarIcon x:Name="myTaskBarIcon" Visibility="Visible" 
                 IconSource="/appIcon.ico">
@@ -91,15 +91,16 @@
             
             <StackPanel Orientation="Horizontal" Grid.Row="2">
                 <TextBlock Text="Search" VerticalAlignment="Center"
-                           HorizontalAlignment="Center" Margin="10,0"
-                           FontSize="18"></TextBlock>
+                           HorizontalAlignment="Center" Margin="10,10"
+                           FontSize="22"></TextBlock>
                 <Grid>
                     <TextBox x:Name="txtSearchBox"
-                        HorizontalAlignment="Left" Height="26" Width="200" IsEnabled="True"
+                        HorizontalAlignment="Left" Height="26" Width="220" IsEnabled="True"
                         FontSize="18" ToolTip="Search" Tag="Search" IsTabStop="True" 
                         Text="{Binding Path=SearchText, UpdateSourceTrigger=PropertyChanged}"></TextBox>
                     <TextBlock IsHitTestVisible="False" Text="Enter Search Term Here" 
                                VerticalAlignment="Center" HorizontalAlignment="Left" 
+                               FontSize="18"
                                Margin="10,0,0,0" Foreground="DarkGray">
                         <TextBlock.Style>
                             <Style TargetType="{x:Type TextBlock}">
@@ -112,7 +113,17 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
-                </Grid>                
+                </Grid>
+                <Button x:Name="btnSettings" Margin="10,10" Click="Settings_Click">
+                    <TextBlock Text="&#xf013;" FontFamily="{StaticResource FontAwesomeSolid}"
+                        Foreground="GhostWhite" FontSize="22" 
+                        Background="#373737" 
+                        VerticalAlignment="Center"></TextBlock>
+                </Button>
+                <Button x:Name="btnClearAll" Content="Clear All" FontSize="20"
+                        Margin="10,10" Click="btnClearAll_Click"
+                        VerticalContentAlignment="Center">                    
+                </Button>
             </StackPanel>            
             <Button BorderThickness="0" Background="#292a2a" Click="CloseButton_Click"
                     WindowChrome.IsHitTestVisibleInChrome="True"

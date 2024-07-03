@@ -531,6 +531,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         txtSearchBox.Focus();
     }
+
+    private void btnClearAll_Click(object sender, RoutedEventArgs e)
+    {
+        ClipItems.ToList().ForEach(a =>
+        {
+            if(!a.Pinned)
+            {
+                ClipItems.Remove(a);
+            }
+        });
+    }
 }
 
 public class ClipItem : INotifyPropertyChanged
