@@ -61,13 +61,13 @@
                 <tb:TaskbarIcon.ContextMenu>
                     <ContextMenu FontSize="22" Background="#292a2a"
                      Margin="0" Padding="0"
-                     Foreground="GhostWhite" BorderThickness="0">
+                     Foreground="#f4f1f0" BorderThickness="0">
                         <MenuItem Header="Settings" BorderThickness="0" Click="Settings_Click" 
                                 Style="{StaticResource CustomMenuItemStyle}"
                                 Background="#292a2a">
                             <MenuItem.Icon>
                                 <TextBlock Text="&#xf013;" FontFamily="{StaticResource FontAwesomeSolid}"
-                                    Foreground="GhostWhite" FontSize="22" 
+                                    Foreground="#f4f1f0" FontSize="22" 
                                     Background="#373737" 
                                     VerticalAlignment="Center"></TextBlock>
                             </MenuItem.Icon>
@@ -77,7 +77,7 @@
                                 Background="#292a2a">
                             <MenuItem.Icon>
                                 <TextBlock Text="&#xf011;" FontFamily="{StaticResource FontAwesomeSolid}"
-                                    Foreground="GhostWhite" FontSize="22" 
+                                    Foreground="#f4f1f0" FontSize="22" 
                                     Background="#373737" 
                                     VerticalAlignment="Center"></TextBlock>
                             </MenuItem.Icon>
@@ -92,6 +92,7 @@
             <StackPanel Orientation="Horizontal" Grid.Row="2">
                 <TextBlock Text="Search" VerticalAlignment="Center"
                            HorizontalAlignment="Center" Margin="10,10"
+                           Foreground="#f4f1f0"
                            FontSize="22"></TextBlock>
                 <Grid>
                     <TextBox x:Name="txtSearchBox"
@@ -116,12 +117,13 @@
                 </Grid>
                 <Button x:Name="btnSettings" Margin="10,10" Click="Settings_Click">
                     <TextBlock Text="&#xf013;" FontFamily="{StaticResource FontAwesomeSolid}"
-                        Foreground="GhostWhite" FontSize="22" 
+                        Foreground="#f4f1f0" FontSize="22" 
                         Background="#373737" 
                         VerticalAlignment="Center"></TextBlock>
                 </Button>
                 <Button x:Name="btnClearAll" Content="Clear All" FontSize="20"
                         Margin="10,10" Click="btnClearAll_Click"
+                        Foreground="#f4f1f0"
                         VerticalContentAlignment="Center">                    
                 </Button>
             </StackPanel>            
@@ -129,7 +131,7 @@
                     WindowChrome.IsHitTestVisibleInChrome="True"
                 VerticalAlignment="Top" HorizontalAlignment="Right" Margin="11,4">
                 <TextBlock Text="&#xf00d;" FontFamily="{StaticResource FontAwesomeSolid}" 
-                    Foreground="GhostWhite" FontSize="34" Background="#292a2a"
+                    Foreground="#f4f1f0" FontSize="34" Background="#292a2a"
                     VerticalAlignment="Top"></TextBlock>
             </Button>
 
@@ -162,7 +164,7 @@
                                     </Grid.InputBindings>
                                     <TextBlock Text="{Binding Path=Text}" TextWrapping="Wrap"
                                     HorizontalAlignment="Left" VerticalAlignment="Center"
-                                    Height="30" Foreground="#FFFFFFFF"
+                                    Height="30" Foreground="#f4f1f0"
                                     FontSize="21" 
                                     MaxWidth="{Binding Path=ActualWidth, ElementName=lvMain, UpdateSourceTrigger=PropertyChanged, Converter={local:PercentageConverter}, ConverterParameter='0.85'}"                            
                                     Visibility= "{Binding IsImage, Converter={StaticResource FalseBoolToVisConverter}}">
@@ -183,7 +185,7 @@
                                         VerticalAlignment="Top">
                                         <TextBlock Text="&#xf005;"                                 
                                         FontFamily="{Binding Path=Pinned, Converter={StaticResource PinIconConverter}}" 
-                                        Foreground="GhostWhite" FontSize="20" 
+                                        Foreground="#f4f1f0" FontSize="20" 
                                         Background="#373737"
                                         VerticalAlignment="Top"></TextBlock>
                                     </Button>
@@ -193,7 +195,7 @@
                                         VerticalAlignment="Bottom">
                                         <TextBlock Text="&#xf2ed;"                                 
                                         FontFamily="{StaticResource FontAwesomeReg}"
-                                        Foreground="GhostWhite" FontSize="20" 
+                                        Foreground="#f4f1f0" FontSize="20" 
                                         Background="#373737" 
                                         VerticalAlignment="Center"></TextBlock>
                                     </Button>
