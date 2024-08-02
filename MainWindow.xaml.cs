@@ -306,7 +306,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 }
                 else if(e.Format == ClipboardFormat.Text || e.Format == ClipboardFormat.UnicodeText)
                 {
-                    var text = e.Data?.ToString() ?? "";
+                    var text = e.Data?.ToString()?.Trim() ?? "";
+                    if(string.IsNullOrEmpty(text))
+                    {
+                        return;
+                    }
                     var existingItem = ClipItems.SingleOrDefault(a => a.Text == text);
                     if(existingItem == null)
                     {
