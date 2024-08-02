@@ -148,20 +148,20 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Border CornerRadius="8" Padding="2" BorderThickness="2"
-                            Margin="0" BorderBrush="#373737" Background="#373737" >
+                            Margin="0" BorderBrush="#373737" Background="#373737">
+                            <Border.InputBindings>
+                                <MouseBinding MouseAction="LeftDoubleClick"
+            Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.PasteClipCommand}"
+            CommandParameter="{Binding}">
+                                </MouseBinding>
+                            </Border.InputBindings>
                             <Grid Background="#373737" Margin="7,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"></ColumnDefinition>
                                     <ColumnDefinition Width="4"></ColumnDefinition>
                                     <ColumnDefinition Width="27"></ColumnDefinition>
                                 </Grid.ColumnDefinitions>
-                                <Grid>
-                                    <Grid.InputBindings>
-                                        <MouseBinding MouseAction="LeftDoubleClick"
-                                                    Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.PasteClipCommand}"
-                                                    CommandParameter="{Binding}">
-                                        </MouseBinding>
-                                    </Grid.InputBindings>
+                                <Grid>                                    
                                     <TextBlock Text="{Binding Path=Text}" TextWrapping="Wrap"
                                     HorizontalAlignment="Left" VerticalAlignment="Center"
                                     Height="30" Foreground="#f4f1f0"
