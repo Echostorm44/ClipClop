@@ -231,35 +231,35 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
 	public void RestoreMe(HotKey hotKey)
 	{
-		try
+		App.Current.Dispatcher.Invoke(() =>
 		{
-			this.Show();
-			this.WindowState = WindowState.Normal;
-			this.ShowInTaskbar = true;
-			ShowWindow(MyWatcher.MyWindowHandle, ShowWindowCommands.Restore);
-			SetForegroundWindow(MyWatcher.MyWindowHandle);
-			if(Settings.OpenAtMousePointer)
+			try
 			{
-				var mouseLoc = CursorPosition.GetCursorPosition();
-				MoveWindowToPosition((int)mouseLoc.X, (int)mouseLoc.Y, MyWatcher.MyWindowHandle,
-                    (int)this.Height, (int)this.Width);
-			}
-			lvMain.Focus();
-			if(lvMain.Items.Count > 0)
-			{
-				lvMain.SelectedItem = lvMain.Items[0];
-				ListViewItem item = lvMain.ItemContainerGenerator.ContainerFromIndex(0) as ListViewItem;
-				if(item != null)
+				this.Opacity = 1;
+				SetForegroundWindow(MyWatcher.MyWindowHandle);
+				if(Settings.OpenAtMousePointer)
 				{
-					item.Focus();
+					var mouseLoc = CursorPosition.GetCursorPosition();
+					MoveWindowToPosition((int)mouseLoc.X, (int)mouseLoc.Y, MyWatcher.MyWindowHandle,
+								 (int)this.Height, (int)this.Width);
+				}
+				lvMain.Focus();
+				if(lvMain.Items.Count > 0)
+				{
+					lvMain.SelectedItem = lvMain.Items[0];
+					ListViewItem item = lvMain.ItemContainerGenerator.ContainerFromIndex(0) as ListViewItem;
+					if(item != null)
+					{
+						item.Focus();
+					}
 				}
 			}
-		}
-		catch(Exception ex)
-		{
-			myTaskBarIcon.ShowBalloonTip("Error", ex.Message, Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Error);
-			Helpers.WriteLogEntry(ex.ToString());
-		}
+			catch(Exception ex)
+			{
+				myTaskBarIcon.ShowBalloonTip("Error", ex.Message, Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Error);
+				Helpers.WriteLogEntry(ex.ToString());
+			}
+		});
 	}
 
 	private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -424,9 +424,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 				Clipboard.SetDataObject(item.Text, true);
 			}
 			SendAltTabAndPaste();
-			ResetSearch();
-			this.WindowState = WindowState.Minimized;
-			this.ShowInTaskbar = false;
+			HideMe();
 		}
 		catch(Exception ex)
 		{
@@ -506,10 +504,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
 	private void CloseButton_Click(object sender, RoutedEventArgs e)
 	{
-		ResetSearch();
-		this.WindowState = WindowState.Minimized;
-		this.ShowInTaskbar = false;
-		this.Hide();
+		HideMe();
 	}
 
 	void ExitButton(object sender, RoutedEventArgs e)
@@ -525,10 +520,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
 	void EscapeButtonClick()
 	{
-		ResetSearch();
-		this.WindowState = WindowState.Minimized;
-		this.ShowInTaskbar = false;
-		this.Hide();
+		HideMe();
 	}
 
 	private void Settings_Click(object sender, RoutedEventArgs e)
@@ -551,6 +543,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 				ClipItems.Remove(a);
 			}
 		});
+	}
+
+	void HideMe()
+	{
+		ResetSearch();
+		this.Opacity = 0;
 	}
 }
 
