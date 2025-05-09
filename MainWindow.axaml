@@ -1,0 +1,139 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:local="using:ClipClop" 
+		xmlns:vm="clr-namespace:ClipClop;assembly=ClipClop"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		x:DataType="local:MainWindow" MinWidth="500" MinHeight="500"
+        x:Class="ClipClop.MainWindow" Loaded="Window_Loaded" Closing="Window_Closing"
+        Title="Clip Clop">
+	<Window.Resources>
+		<vm:PinIconConverter x:Key="PinIconConverter"/>
+		<vm:FalseBoolToVisiblityConverter x:Key="FalseBoolToVisiblityConverter"/>
+	</Window.Resources>
+	<SplitView Name="settingPanel" IsPaneOpen="False" DisplayMode="Overlay"
+			   PanePlacement="Right"
+			   OpenPaneLength="400">
+		<SplitView.Pane>
+			<Grid Margin="5">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"></RowDefinition>
+					<RowDefinition Height="Auto"></RowDefinition>
+					<RowDefinition Height="Auto"></RowDefinition>
+					<RowDefinition Height="Auto"></RowDefinition>
+					<RowDefinition Height="Auto"></RowDefinition>
+					<RowDefinition Height="Auto"></RowDefinition>
+					<RowDefinition Height="Auto"></RowDefinition>
+					<RowDefinition Height="Auto"></RowDefinition>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="150"></ColumnDefinition>
+					<ColumnDefinition Width="*"></ColumnDefinition>
+					<ColumnDefinition Width="*"></ColumnDefinition>
+				</Grid.ColumnDefinitions>
+				<TextBlock Text="Settings" HorizontalAlignment="Center" Margin="0, 5"
+						   Grid.ColumnSpan="3" Focusable="False"
+						   FontSize="20"></TextBlock>
+				<Label Content="Hotkey Setup" Grid.Row="1" Foreground="#f4f1f0" FontSize="17" Focusable="False"
+					   HorizontalAlignment="Left" VerticalAlignment="Center"></Label>
+
+				<Label Content="Key" Grid.Column="1" Grid.Row="1" Foreground="#f4f1f0" Focusable="False"
+					   FontSize="17" VerticalAlignment="Center" HorizontalAlignment="Left"></Label>
+
+				<TextBox x:Name="txtHotKey" KeyUp="txtHotKey_PreviewKeyUp" 
+						 VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+						 GotFocus="txtHotKey_GotFocus" IsTabStop="False"
+						 Grid.Row="2" Grid.Column="1" MaxLength="1">
+				</TextBox>
+				<Label Content="Modifier" Grid.Column="2" Grid.Row="1" Foreground="#f4f1f0" Focusable="False"
+					FontSize="17" VerticalAlignment="Center" HorizontalAlignment="Left"></Label>
+				<ComboBox Name="ddlMod" Grid.Column="2" Grid.Row="2" Width="111" FontSize="17" IsTabStop="False"
+					HorizontalAlignment="Left" SelectionChanged="HotkeySelection_SelectionChanged"></ComboBox>
+				<CheckBox x:Name="chkLaunchAtStartup" Grid.Row="3" Content="Launch at Startup" IsTabStop="False"
+				  FontSize="17" Grid.ColumnSpan="3" Checked="chkLaunchAtStartup_Checked" Margin="10"
+				  Unchecked="chkLaunchAtStartup_Checked">
+				</CheckBox>
+
+				<CheckBox x:Name="chkOpenAtMouse" Grid.Row="4" Content="Open on Mouse Pointer"
+					FontSize="17" Grid.ColumnSpan="3" IsTabStop="False"
+						  Checked="chkOpenAtMouse_Checked" Margin="10"
+						  Unchecked="chkOpenAtMouse_Checked">
+				</CheckBox>
+				<TextBlock Grid.Row="5" Grid.ColumnSpan="3" TextWrapping="Wrap" FontSize="17"
+				   Margin="10" Focusable="False">
+					<TextBlock.Text>
+						Slapped together by Adam Marciniec
+					</TextBlock.Text>
+				</TextBlock>
+				<Button Click="btnSource_Click" Focusable="False" FontSize="17"
+						Grid.Row="6" Grid.ColumnSpan="3">💡 About</Button>
+				<Button Focusable="False" FontSize="17" Click="OpenLog"
+						Grid.Row="7" Grid.ColumnSpan="3">📁 Log Folder</Button>
+			</Grid>
+		</SplitView.Pane>
+		<Grid Background="#202020">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"></RowDefinition>
+			<RowDefinition Height="60"></RowDefinition>
+		</Grid.RowDefinitions>
+		<ListBox x:Name="lbItems" ItemsSource="{Binding VisibleClipItems}" 
+				 Background="Transparent" Padding="5" 
+				  KeyUp="ListBox_KeyUp">			
+			<ListBox.ItemTemplate>
+				<DataTemplate>
+					<Grid Margin="0" Background="Transparent"						  
+						  VerticalAlignment="Center">
+						<Grid.ColumnDefinitions>							
+							<ColumnDefinition Width="*"></ColumnDefinition>
+							<ColumnDefinition Width="4"></ColumnDefinition>
+							<ColumnDefinition Width="27"></ColumnDefinition>
+						</Grid.ColumnDefinitions>
+						<TextBlock TextWrapping="Wrap" Text="{Binding VisibleText}"
+								    MaxHeight="46"
+									HorizontalAlignment="Left" VerticalAlignment="Center"
+								    IsVisible="{Binding IsImage, Converter={StaticResource FalseBoolToVisiblityConverter}}"
+									Background="Transparent" Grid.Column="0"
+									FontSize="17">
+						</TextBlock>
+						<Image Height="80" Source="{Binding Image}"
+							   VerticalAlignment="Center" HorizontalAlignment="Left"
+							   IsVisible="{Binding IsImage}">							
+						</Image>
+						<StackPanel Orientation="Vertical" Grid.Column="2">
+							<TextBlock FontSize="19" 
+									   Text="{Binding Pinned, Converter={StaticResource PinIconConverter}}"
+									   Tapped="PinButton_Tapped"
+									   Margin="1,0,0,0"></TextBlock>
+							<TextBlock FontSize="16" Tapped="DeleteClipItem_Tapped">🗑</TextBlock>
+						</StackPanel>
+					</Grid>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+		<Grid Grid.Row="1" Margin="10,0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"></ColumnDefinition>
+				<ColumnDefinition Width="Auto"></ColumnDefinition>
+				<ColumnDefinition Width="Auto"></ColumnDefinition>
+			</Grid.ColumnDefinitions>
+			<TextBox x:Name="txtSearchBox" HorizontalAlignment="Left" Height="26" Width="250"
+                        FontSize="18" Tag="Search" IsTabStop="True" Watermark="Search"
+                        Text="{Binding SearchText}"></TextBox>
+			<Button x:Name="btnSettings" Content="⛭" 
+					Grid.Column="1"
+					Margin="10,0" FontSize="18"
+					Tapped="SettingButton_Tapped"
+					HorizontalAlignment="Left">				
+			</Button>
+			<Button x:Name="btnClear" Content="🧹"
+					ToolTip.Tip="Clear All" ToolTip.Placement="TopEdgeAlignedLeft"
+					Grid.Column="2" FontSize="18"
+					Tapped="ClearItems_Tapped"
+					HorizontalAlignment="Left">
+			</Button>
+		</Grid>
+		
+	</Grid>
+</SplitView>
+</Window>

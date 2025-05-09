@@ -1,0 +1,40 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ClipClop.App"
+             RequestedThemeVariant="Dark">
+    <Application.Styles>
+        <FluentTheme />		
+		<Style Selector="ListBoxItem:pointerover">
+			<Setter Property="CornerRadius" Value="9"></Setter>
+		</Style>
+		<Style Selector="ListBoxItem:selected">
+			<Setter Property="CornerRadius" Value="9"></Setter>
+		</Style>
+		<Style Selector="ListBoxItem:pressed">
+			<Setter Property="CornerRadius" Value="9"></Setter>
+		</Style>
+		<Style Selector="ListBoxItem">
+			<Setter Property="CornerRadius" Value="9"></Setter>
+			<Setter Property="FocusAdorner">
+				<FocusAdornerTemplate>					
+					<Border BorderThickness="2" CornerRadius="9"
+							BorderBrush="{DynamicResource SystemControlFocusVisualPrimaryBrush}">
+					</Border>
+				</FocusAdornerTemplate>
+			</Setter>
+		</Style>
+    </Application.Styles>
+	<TrayIcon.Icons>
+		<TrayIcons>
+			<TrayIcon Icon="/Images/appIcon.ico" Clicked="TrayIcon_Clicked"
+					  ToolTipText="ClipClop Clipboard Manager">
+				<TrayIcon.Menu>
+					<NativeMenu>
+						<NativeMenuItem Header="⏻ Quit" Click="QuitClick">
+						</NativeMenuItem>
+					</NativeMenu>
+				</TrayIcon.Menu>
+			</TrayIcon>
+		</TrayIcons>
+	</TrayIcon.Icons>
+</Application>
