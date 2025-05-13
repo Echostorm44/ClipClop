@@ -27,68 +27,64 @@ public class ClipboardWatcher : IDisposable
 	private const int WM_CLIPBOARDUPDATE = 0x031D;
 	private static readonly IntPtr HWND_MESSAGE = new IntPtr(-3);
 	private delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+	WndProcDelegate wndProc;
 
 	public ClipboardWatcher(Action<object> onClipboardChange)
 	{
-		OnClipboardChange = onClipboardChange;
-		IsRunning = true;
-		MessageLoopThread = new Thread(MessageLoop)
+		try
 		{
-			IsBackground = true,
-			Name = "ClipboardWatcherThread"
-		};
-		MessageLoopThread.Start();
-	}
+			OnClipboardChange = onClipboardChange;
+			wndProc = WndProc;
 
-	private void MessageLoop()
-	{
-		WndProcDelegate wndProc = WndProc;
+			var wc = new WNDCLASS
+			{
+				lpszClassName = "ClipboardWatcherWindow",
+				lpfnWndProc = Marshal.GetFunctionPointerForDelegate(wndProc)
+			};
 
-		var wc = new WNDCLASS
-		{
-			lpszClassName = "ClipboardWatcherWindow",
-			lpfnWndProc = Marshal.GetFunctionPointerForDelegate(wndProc)
-		};
+			ushort classAtom = RegisterClass(ref wc);
+			if(classAtom == 0)
+			{
+				throw new Exception("Failed to register window class");
+			}
 
-		ushort classAtom = RegisterClass(ref wc);
-		if(classAtom == 0)
-		{
-			throw new Exception("Failed to register window class");
+			WindowPointer = CreateWindowEx(
+				0, wc.lpszClassName, string.Empty, 0,
+				0, 0, 0, 0,
+				HWND_MESSAGE, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+
+			if(WindowPointer == IntPtr.Zero)
+			{
+				throw new Exception("Failed to create message-only window");
+			}
+
+			AddClipboardFormatListener(WindowPointer);
 		}
-
-		WindowPointer = CreateWindowEx(
-			0, wc.lpszClassName, string.Empty, 0,
-			0, 0, 0, 0,
-			HWND_MESSAGE, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-
-		if(WindowPointer == IntPtr.Zero)
+		catch(Exception ex)
 		{
-			throw new Exception("Failed to create message-only window");
+			Helpers.WriteLogEntry(ex.ToString());
 		}
-
-		AddClipboardFormatListener(WindowPointer);
-
-		while(IsRunning && GetMessage(out MSG msg, IntPtr.Zero, 0, 0))
-		{
-			TranslateMessage(ref msg);
-			DispatchMessage(ref msg);
-		}
-
-		RemoveClipboardFormatListener(WindowPointer);
-		DestroyWindow(WindowPointer);
 	}
 
 	private IntPtr WndProc(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam)
 	{
-		if(msg == WM_CLIPBOARDUPDATE)
+		try
 		{
-			Debouncer.Debounce("ClipboardUpdate", () =>
+			if(msg == WM_CLIPBOARDUPDATE)
 			{
-				DoTheWork();
-			}, 200);
+				Debouncer.Debounce("ClipboardUpdate", () =>
+				{
+					DoTheWork();
+				}, 200);
+			}
+			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
-
-		return DefWindowProc(hwnd, msg, wParam, lParam);
+		catch(Exception ex)
+		{
+			Helpers.WriteLogEntry(ex.ToString());
+		}
+		Helpers.WriteLogEntry("Returned an empty pointer in WndProc Clipboard Watcher");
+		return IntPtr.Zero;
 	}
 
 	private void DoTheWork()
@@ -198,6 +194,7 @@ public class ClipboardWatcher : IDisposable
 			}
 			catch(Exception ex)
 			{
+				Helpers.WriteLogEntry(ex.ToString());
 				Console.WriteLine("Clipboard read failed: " + ex.Message);
 			}
 			finally
@@ -226,6 +223,10 @@ public class ClipboardWatcher : IDisposable
 
 			Marshal.Copy(pixels, pixelData, 0, pixelDataSize);
 		}
+		catch(Exception ex)
+		{
+			Helpers.WriteLogEntry(ex.ToString());
+		}
 		finally
 		{
 			Marshal.FreeHGlobal(pixels);
@@ -252,13 +253,16 @@ public class ClipboardWatcher : IDisposable
 
 	public void Dispose()
 	{
-		IsRunning = false;
-		PostThreadMessage(GetThreadId(), 0x0012, IntPtr.Zero, IntPtr.Zero); // WM_QUIT
-	}
-
-	private uint GetThreadId()
-	{
-		return (uint)MessageLoopThread.ManagedThreadId;
+		try
+		{
+			IsRunning = false;
+			RemoveClipboardFormatListener(WindowPointer);
+			DestroyWindow(WindowPointer);
+		}
+		catch(Exception ex)
+		{
+			Helpers.WriteLogEntry(ex.ToString());
+		}
 	}
 
 	#region Win32 API
