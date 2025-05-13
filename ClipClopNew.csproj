@@ -29,7 +29,9 @@
       <AvaloniaResource Include="Images\appIcon.ico" />
     </ItemGroup>
     <ItemGroup>
-      <Content Include="Images\appIcon.ico" />
+      <Content Include="Images\appIcon.ico">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
     <ItemGroup>
@@ -45,6 +47,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Update="backdrop.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
       <None Update="Images\ClipClopIcon.png">
         <Pack>True</Pack>
         <PackagePath>\</PackagePath>
