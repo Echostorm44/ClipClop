@@ -4,11 +4,14 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
+using HarfBuzzSharp;
 using Microsoft.Win32;
+using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -19,6 +22,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ClipClop;
 
@@ -278,6 +282,130 @@ public static class WindowPositionManager
 		}
 		catch
 		{
+		}
+	}
+}
+
+public static class ClipboardHelper
+{
+	const uint CF_DIB = 8;
+	const uint GMEM_MOVEABLE = 0x0002;
+
+	[DllImport("user32.dll", SetLastError = true)]
+	static extern bool OpenClipboard(IntPtr hWndNewOwner);
+
+	[DllImport("user32.dll", SetLastError = true)]
+	static extern bool CloseClipboard();
+
+	[DllImport("user32.dll", SetLastError = true)]
+	static extern bool EmptyClipboard();
+
+	[DllImport("user32.dll", SetLastError = true)]
+	static extern IntPtr SetClipboardData(uint uFormat, IntPtr hMem);
+
+	[DllImport("kernel32.dll", SetLastError = true)]
+	static extern IntPtr GlobalAlloc(uint uFlags, int dwBytes);
+
+	[DllImport("kernel32.dll", SetLastError = true)]
+	static extern IntPtr GlobalLock(IntPtr hMem);
+
+	[DllImport("kernel32.dll", SetLastError = true)]
+	static extern bool GlobalUnlock(IntPtr hMem);
+
+	public static void SetBitmapToClipboard(Bitmap bitmap)
+	{
+		using var dibStream = new MemoryStream();
+		WriteDib(bitmap, dibStream);
+		var dib = dibStream.ToArray();
+
+		IntPtr hGlobal = GlobalAlloc(GMEM_MOVEABLE, dib.Length);
+		if(hGlobal == IntPtr.Zero)
+		{
+			throw new Exception("GlobalAlloc failed.");
+		}
+
+		IntPtr ptr = GlobalLock(hGlobal);
+		if(ptr == IntPtr.Zero)
+		{
+			throw new Exception("GlobalLock failed.");
+		}
+
+		Marshal.Copy(dib, 0, ptr, dib.Length);
+		GlobalUnlock(hGlobal);
+
+		if(!OpenClipboard(IntPtr.Zero))
+		{
+			throw new Exception("OpenClipboard failed.");
+		}
+
+		try
+		{
+			if(!EmptyClipboard())
+			{
+				throw new Exception("EmptyClipboard failed.");
+			}
+
+			if(SetClipboardData(CF_DIB, hGlobal) == IntPtr.Zero)
+			{
+				throw new Exception("SetClipboardData failed.");
+			}
+
+			hGlobal = IntPtr.Zero; // ownership transferred
+		}
+		finally
+		{
+			CloseClipboard();
+		}
+	}
+
+	private static void WriteDib(Bitmap bitmap, Stream stream)
+	{
+		var pixelSize = bitmap.PixelSize;
+		var width = pixelSize.Width;
+		var height = pixelSize.Height;
+		const int bpp = 32; // Avalonia always outputs BGRA8888
+
+		int rowBytes = width * (bpp / 8);
+		int imageSize = rowBytes * height;
+		const int headerSize = 40;
+		int stride = width * 4; // assuming Bgra8888 (4 bytes per pixel)
+		int size = stride * height;
+
+		byte[] pixelData = new byte[imageSize];
+		var handle1 = GCHandle.Alloc(pixelData, GCHandleType.Pinned);
+		try
+		{
+			bitmap.CopyPixels(new PixelRect(0, 0, width, height), handle1.AddrOfPinnedObject(), size, stride);
+
+			using var writer = new BinaryWriter(stream);
+
+			// BITMAPINFOHEADER (40 bytes)
+			writer.Write(headerSize);       // biSize
+			writer.Write(width);            // biWidth
+			writer.Write(height);           // biHeight (positive = bottom-up)
+			writer.Write((short)1);         // biPlanes
+			writer.Write((short)32);        // biBitCount
+			writer.Write(0);                // biCompression = BI_RGB
+			writer.Write(imageSize);        // biSizeImage
+			writer.Write(0);                // biXPelsPerMeter
+			writer.Write(0);                // biYPelsPerMeter
+			writer.Write(0);                // biClrUsed
+			writer.Write(0);                // biClrImportant
+
+			// Write pixel rows bottom-up (flip vertically)
+			for(int y = height - 1; y >= 0; y--)
+			{
+				int offset = y * rowBytes;
+				writer.Write(pixelData, offset, rowBytes);
+			}
+		}
+		catch(Exception ex)
+		{
+			Helpers.WriteLogEntry(ex.ToString());
+		}
+		finally
+		{
+			handle1.Free();
 		}
 	}
 }

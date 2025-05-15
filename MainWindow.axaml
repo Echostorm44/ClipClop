@@ -82,7 +82,7 @@
 				  KeyUp="ListBox_KeyUp">			
 			<ListBox.ItemTemplate>
 				<DataTemplate>
-					<Grid Margin="0" Background="Transparent"						  
+					<Grid Margin="0" Background="Transparent"
 						  VerticalAlignment="Center">
 						<Grid.ColumnDefinitions>							
 							<ColumnDefinition Width="*"></ColumnDefinition>
@@ -90,13 +90,13 @@
 							<ColumnDefinition Width="27"></ColumnDefinition>
 						</Grid.ColumnDefinitions>
 						<TextBlock TextWrapping="Wrap" Text="{Binding VisibleText}"
-								    MaxHeight="46"
+								    MaxHeight="46" DoubleTapped="Clip_DoubleTapped"
 									HorizontalAlignment="Left" VerticalAlignment="Center"
 								    IsVisible="{Binding IsImage, Converter={StaticResource FalseBoolToVisiblityConverter}}"
 									Background="Transparent" Grid.Column="0"
 									FontSize="17">
 						</TextBlock>
-						<Image Height="80" Source="{Binding Image}"
+						<Image Height="80" Source="{Binding Image}" DoubleTapped="Clip_DoubleTapped"
 							   VerticalAlignment="Center" HorizontalAlignment="Left"
 							   IsVisible="{Binding IsImage}">							
 						</Image>

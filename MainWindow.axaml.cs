@@ -345,9 +345,7 @@ public partial class MainWindow : Window
 	{
 		if(clip.IsImage)
 		{
-			var dataObject = new DataObject();
-			dataObject.Set(DataFormats.Files, clip.Image);
-			this.Clipboard.SetDataObjectAsync(dataObject).Wait();
+			ClipboardHelper.SetBitmapToClipboard(clip.Image);
 		}
 		else
 		{
@@ -510,6 +508,15 @@ public partial class MainWindow : Window
 		{
 			Helpers.WriteLogEntry(ex.ToString());
 		}
+	}
+
+	private void Clip_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+	{
+		if(lbItems.SelectedItem == null)
+		{
+			return;
+		}
+		PasteSelection((ClipItem)lbItems.SelectedItem);
 	}
 }
 
