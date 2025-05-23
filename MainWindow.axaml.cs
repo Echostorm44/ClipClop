@@ -96,6 +96,7 @@ public partial class MainWindow : Window
 				lbItems.Scroll.Offset = new Vector(0, 0);
 				this.Show();
 				this.Activate();
+				lbItems.Focus();
 			});
 
 			Program.MainClipboardWatcher = new ClipboardWatcher((obj) =>
@@ -392,6 +393,7 @@ public partial class MainWindow : Window
 				lbItems.Scroll.Offset = new Vector(0, 0);
 				this.Show();
 				this.Activate();
+				lbItems.Focus();
 			});
 			ddlMod.Focus();
 		}
@@ -439,6 +441,7 @@ public partial class MainWindow : Window
 				lbItems.Scroll.Offset = new Vector(0, 0);
 				this.Show();
 				this.Activate();
+				lbItems.Focus();
 			});
 			Helpers.SaveSettings();
 		}
