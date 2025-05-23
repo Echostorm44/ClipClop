@@ -1,7 +1,8 @@
 # ClipClop
 ### A Simple and Clean Clipboard Manager 
 
-![image](https://github.com/user-attachments/assets/9e22ab83-6c9f-497f-ac7c-fffb0dcf59f9)
+![image](https://github.com/user-attachments/assets/57aae39b-e337-4b7d-9d67-ae67d7834182)
+
 
 ClipClop comes from a frustration that none of the available clipboard managers are exactly what I'd like. 
 
