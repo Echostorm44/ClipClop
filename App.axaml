@@ -3,7 +3,7 @@
              x:Class="ClipClop.App"
              RequestedThemeVariant="Dark">
     <Application.Styles>
-        <FluentTheme />		
+        <FluentTheme />
 		<Style Selector="ListBoxItem:pointerover">
 			<Setter Property="CornerRadius" Value="9"></Setter>
 		</Style>

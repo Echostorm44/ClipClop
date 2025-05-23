@@ -92,6 +92,8 @@ public partial class MainWindow : Window
 					var pos = GetMousePosition();
 					this.Position = new PixelPoint(pos.X, pos.Y);
 				}
+				txtSearchBox.Text = "";
+				lbItems.Scroll.Offset = new Vector(0, 0);
 				this.Show();
 				this.Activate();
 			});
@@ -386,6 +388,8 @@ public partial class MainWindow : Window
 					var pos = GetMousePosition();
 					this.Position = new PixelPoint(pos.X, pos.Y);
 				}
+				txtSearchBox.Text = "";
+				lbItems.Scroll.Offset = new Vector(0, 0);
 				this.Show();
 				this.Activate();
 			});
@@ -431,6 +435,8 @@ public partial class MainWindow : Window
 					var pos = GetMousePosition();
 					this.Position = new PixelPoint(pos.X, pos.Y);
 				}
+				txtSearchBox.Text = "";
+				lbItems.Scroll.Offset = new Vector(0, 0);
 				this.Show();
 				this.Activate();
 			});
