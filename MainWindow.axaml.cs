@@ -355,6 +355,7 @@ public partial class MainWindow : Window
 			this.Clipboard.SetTextAsync(clip.Text).Wait();
 		}
 		this.Hide();
+		System.Threading.Thread.Sleep(150); // Wait for the focus to move back
 		keybd_event(VK_CONTROL, 0, 0, UIntPtr.Zero);
 
 		// Press V key
