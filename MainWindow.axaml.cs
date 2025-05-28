@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -37,6 +38,29 @@ public partial class MainWindow : Window
 	private const byte VK_CONTROL = 0x11;
 	private const byte VK_V = 0x56;
 	private const uint KEYEVENTF_KEYUP = 0x0002;
+
+	[StructLayout(LayoutKind.Sequential)]
+	struct INPUT
+	{
+		public int type;
+		public InputUnion u;
+	}
+
+	[StructLayout(LayoutKind.Explicit)]
+	struct InputUnion
+	{
+		[FieldOffset(0)] public KEYBDINPUT ki;
+	}
+
+	[StructLayout(LayoutKind.Sequential)]
+	struct KEYBDINPUT
+	{
+		public ushort wVk;
+		public ushort wScan;
+		public uint dwFlags;
+		public uint time;
+		public IntPtr dwExtraInfo;
+	}
 
 	[StructLayout(LayoutKind.Sequential)]
 
@@ -355,7 +379,8 @@ public partial class MainWindow : Window
 			this.Clipboard.SetTextAsync(clip.Text).Wait();
 		}
 		this.Hide();
-		System.Threading.Thread.Sleep(250); // Wait for the focus to move back
+		Dispatcher.UIThread.RunJobs();
+		Task.Delay(400).Wait();// Wait for the focus to move back
 		keybd_event(VK_CONTROL, 0, 0, UIntPtr.Zero);
 
 		// Press V key
