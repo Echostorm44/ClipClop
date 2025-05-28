@@ -18,6 +18,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -90,8 +91,44 @@ public partial class MainWindow : Window
 		}
 	}
 
+	bool IsAdministrator()
+	{
+		using(WindowsIdentity identity = WindowsIdentity.GetCurrent())
+		{
+			WindowsPrincipal principal = new WindowsPrincipal(identity);
+			return principal.IsInRole(WindowsBuiltInRole.Administrator);
+		}
+	}
+
+	void RelaunchAsAdminIfNeeded()
+	{
+		if(!IsAdministrator())
+		{
+			var exeName = Process.GetCurrentProcess().MainModule.FileName;
+
+			var startInfo = new ProcessStartInfo(exeName)
+			{
+				UseShellExecute = true,
+				Verb = "runas" // This triggers the UAC prompt
+			};
+
+			try
+			{
+				Process.Start(startInfo);
+			}
+			catch(System.ComponentModel.Win32Exception)
+			{
+				// User canceled UAC prompt
+				Environment.Exit(0);
+			}
+
+			Environment.Exit(0); // Exit current non-elevated instance
+		}
+	}
+
 	public MainWindow()
 	{
+		RelaunchAsAdminIfNeeded();
 		InitializeComponent();
 		this.DataContext = this;
 		Opened += (_, _) => WindowPositionManager.RestoreWindowPosition(this);
