@@ -25,3 +25,5 @@ So I made my own, I hope you find it useful.
 ---
 
 ![image](https://github.com/user-attachments/assets/dfd9811a-9e48-4e60-9c81-dd8da70ce17b)
+
+Download the latest from [Releases](https://github.com/Echostorm44/ClipClop/releases)
